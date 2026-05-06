@@ -1,3099 +1,1657 @@
 <!DOCTYPE html>
-
 <html lang="en">
-
 <head>
-
 <meta charset="UTF-8">
-
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>bitflip · NmapWire</title>
-
 <link rel="preconnect" href="https://fonts.googleapis.com">
-
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Oxanium:wght@600;700;800&display=swap" rel="stylesheet">
-
 <style>
 
-
-
 /* ── RESET ─────────────────────────────────────────────── */
-
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
 html { scroll-behavior: smooth; }
-
 a { text-decoration: none; color: inherit; }
-
 ul { list-style: none; }
-
 button { background: none; border: none; cursor: pointer; font: inherit; }
 
-
-
 /* ── VARIABLES ──────────────────────────────────────────── */
-
 :root {
-
   --c-bg:        #0a0a0a;
-
   --c-sidebar:   #0d0d0d;
-
   --c-surface:   #111111;
-
   --c-border:    #1e1e1e;
-
   --c-border-2:  #2a2a2a;
-
   --c-text:      #b0b0b0;
-
   --c-heading:   #e8e8e8;
-
   --c-muted:     #484848;
-
   --c-accent:    #3b9eff;
-
   --c-accent-dim:#3b9eff1a;
-
   --c-dim:       #222;
-
   --font-mono:   'JetBrains Mono', monospace;
-
   --font-display:'Oxanium', sans-serif;
-
   --sidebar-w:   240px;
-
   --transition:  0.18s ease;
-
 }
-
-
 
 /* ── BASE ───────────────────────────────────────────────── */
-
 body {
-
   font-family: var(--font-mono);
-
   background: var(--c-bg);
-
   color: var(--c-text);
-
   font-size: 13px;
-
   line-height: 1.75;
-
   min-height: 100vh;
-
   overflow-x: hidden;
-
 }
-
-
 
 body::after {
-
   content: '';
-
   position: fixed; inset: 0; pointer-events: none; z-index: 9999;
-
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
-
   opacity: 0.035;
-
 }
-
-
 
 ::-webkit-scrollbar { width: 4px; }
-
 ::-webkit-scrollbar-track { background: var(--c-bg); }
-
 ::-webkit-scrollbar-thumb { background: var(--c-border-2); border-radius: 2px; }
-
 ::-webkit-scrollbar-thumb:hover { background: var(--c-muted); }
 
-
-
 /* ── LAYOUT ─────────────────────────────────────────────── */
-
 .app { display: flex; min-height: 100vh; }
 
-
-
 /* ── SIDEBAR ────────────────────────────────────────────── */
-
 .sidebar {
-
   position: fixed;
-
   top: 0; left: 0; bottom: 0;
-
   width: var(--sidebar-w);
-
   background: var(--c-sidebar);
-
   border-right: 1px solid var(--c-border);
-
   display: flex;
-
   flex-direction: column;
-
   overflow-y: auto;
-
   z-index: 100;
-
 }
-
-
 
 .sidebar-logo {
-
   padding: 32px 24px 28px;
-
   display: flex;
-
   flex-direction: column;
-
   align-items: center;
-
   text-align: center;
-
 }
-
-
 
 .logo-name {
-
   font-family: var(--font-display);
-
   font-size: 24px;
-
   font-weight: 800;
-
   color: var(--c-heading);
-
   letter-spacing: -0.03em;
-
   display: flex;
-
   align-items: center;
-
   justify-content: center;
-
   gap: 12px;
-
 }
-
-
 
 .logo-name .bit { color: var(--c-heading); }
-
 .logo-name .flip { color: var(--c-accent); position: relative; }
 
-
-
 .logo-icon {
-
   width: 20px;
-
   height: 20px;
-
   border: 2px solid var(--c-accent);
-
   border-radius: 4px;
-
   display: flex;
-
   align-items: center;
-
   justify-content: center;
-
   position: relative;
-
   overflow: hidden;
-
   flex-shrink: 0;
-
 }
-
-
 
 .logo-icon::after {
-
   content: '1';
-
   font-family: var(--font-mono);
-
   font-size: 11px;
-
   color: var(--c-accent);
-
   font-weight: 700;
-
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-
 }
-
-
 
 .sidebar-logo:hover .logo-icon::after {
-
   transform: translateY(-22px);
-
 }
-
-
 
 .logo-icon::before {
-
   content: '0';
-
   position: absolute;
-
   top: 22px;
-
   font-family: var(--font-mono);
-
   font-size: 11px;
-
   color: var(--c-accent);
-
   font-weight: 700;
-
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-
 }
-
-
 
 .sidebar-logo:hover .logo-icon::before {
-
   transform: translateY(-22px);
-
 }
-
-
 
 .logo-tagline {
-
   font-size: 10px;
-
   color: var(--c-muted);
-
   margin-top: 6px;
-
   letter-spacing: 0.18em;
-
   text-transform: uppercase;
-
 }
-
-
 
 .sidebar-nav { flex: 1; padding: 16px 0; }
 
-
-
 .nav-section-label {
-
   font-size: 9px;
-
   letter-spacing: 0.18em;
-
   text-transform: uppercase;
-
   color: var(--c-muted);
-
   padding: 8px 24px 6px;
-
 }
-
-
 
 .nav-item {
-
   display: flex;
-
   align-items: center;
-
   gap: 8px;
-
   padding: 8px 24px;
-
   color: var(--c-text);
-
   font-size: 13.5px;
-
   cursor: pointer;
-
   transition: color var(--transition);
-
 }
-
-
 
 .nav-item:hover {
-
   color: var(--c-heading);
-
 }
-
-
 
 .nav-item.active {
-
   color: var(--c-accent);
-
   font-weight: 500;
-
 }
-
-
 
 .nav-arrow {
-
   margin-left: auto;
-
   font-size: 14px;
-
   opacity: 0.4;
-
   transition: transform 0.22s ease, opacity 0.18s ease;
-
   padding: 4px 6px;
-
   border-radius: 3px;
-
 }
-
-
 
 .nav-arrow:hover {
-
   opacity: 0.8;
-
   background: rgba(255,255,255,0.06);
-
 }
-
-
 
 .nav-levels {
-
   overflow: hidden;
-
   max-height: 0;
-
   transition: max-height 0.3s ease;
-
 }
-
-
 
 .nav-levels.open { max-height: 1200px; }
 
-
-
 .nav-level-item {
-
   display: flex;
-
   align-items: center;
-
   gap: 8px;
-
   padding: 5px 24px 5px 36px;
-
   color: var(--c-muted);
-
   font-size: 12px;
-
   cursor: pointer;
-
   transition: color var(--transition);
-
 }
-
-
 
 .nav-level-item:hover { color: var(--c-text); }
-
 .nav-level-item.active { color: var(--c-accent); font-weight: 500; }
 
-
-
 .nav-level-dot {
-
   width: 3px; height: 3px;
-
   border-radius: 50%;
-
   background: currentColor;
-
   flex-shrink: 0;
-
   opacity: 0.4;
-
 }
-
-
 
 .nav-level-item.active .nav-level-dot { opacity: 0; width: 0; }
 
-
-
 .nav-divider {
-
   height: 1px;
-
   background: var(--c-border);
-
   margin: 12px 24px;
-
 }
-
-
-
 
 
 /* ── CONTENT AREA ───────────────────────────────────────── */
-
 .content {
-
   margin-left: var(--sidebar-w);
-
   flex: 1;
-
   min-height: 100vh;
-
   padding: 52px 48px 52px 64px;
-
 }
-
-
 
 /* ── PAGE TRANSITIONS ───────────────────────────────────── */
-
 @keyframes fadeIn {
-
   from { opacity: 0; transform: translateY(10px); }
-
   to   { opacity: 1; transform: translateY(0); }
-
 }
-
-
 
 .page { animation: fadeIn 0.22s ease both; }
 
-
-
 /* ── TYPOGRAPHY ─────────────────────────────────────────── */
-
 .page-title {
-
   font-family: var(--font-display);
-
   font-size: clamp(22px, 3vw, 30px);
-
   font-weight: 800;
-
   color: var(--c-heading);
-
   letter-spacing: -0.02em;
-
   margin-bottom: 6px;
-
 }
-
-
 
 .page-subtitle {
-
   font-size: 12px;
-
   color: var(--c-muted);
-
   margin-bottom: 40px;
-
   letter-spacing: 0.04em;
-
 }
-
-
 
 h2 {
-
   font-family: var(--font-mono);
-
   font-size: 11px;
-
   font-weight: 500;
-
   letter-spacing: 0.14em;
-
   text-transform: uppercase;
-
   color: var(--c-accent);
-
   margin-bottom: 12px;
-
   margin-top: 36px;
-
   display: flex;
-
   align-items: center;
-
   gap: 10px;
-
 }
-
-
 
 h2::after {
-
   content: '';
-
   flex: 1;
-
   height: 1px;
-
   background: var(--c-border);
-
 }
-
-
 
 p { color: var(--c-text); line-height: 1.8; margin-bottom: 12px; }
 
-
-
 /* ── CODE / COMMAND BLOCKS ──────────────────────────────── */
-
 .cmd-block {
-
   background: var(--c-surface);
-
   border: 1px solid var(--c-border);
-
   border-left: 2px solid var(--c-accent);
-
   border-radius: 4px;
-
   padding: 14px 20px;
-
   padding-right: 52px;
-
   margin: 12px 0;
-
   font-family: var(--font-mono);
-
   font-size: 12.5px;
-
   color: var(--c-heading);
-
   line-height: 1.7;
-
   overflow-x: auto;
-
   position: relative;
-
   cursor: pointer;
-
   transition: border-color var(--transition);
-
 }
-
-
 
 .cmd-block:hover {
-
   border-color: var(--c-accent);
-
 }
-
-
 
 .cmd-copy-btn {
-
   position: absolute;
-
   top: 50%;
-
   right: 12px;
-
   transform: translateY(-50%);
-
   font-family: var(--font-mono);
-
   font-size: 9px;
-
   letter-spacing: 0.1em;
-
   text-transform: uppercase;
-
   color: var(--c-muted);
-
   background: var(--c-bg);
-
   border: 1px solid var(--c-border);
-
   border-radius: 3px;
-
   padding: 3px 7px;
-
   cursor: pointer;
-
   transition: color var(--transition), border-color var(--transition);
-
   user-select: none;
-
   white-space: nowrap;
-
 }
-
-
 
 .cmd-block:hover .cmd-copy-btn {
-
   color: var(--c-accent);
-
   border-color: var(--c-accent);
-
 }
-
-
 
 .cmd-copy-btn.copied {
-
   color: var(--c-accent);
-
   border-color: var(--c-accent);
-
 }
-
-
 
 .cmd-block .prompt { color: var(--c-accent); user-select: none; }
-
 .cmd-block .flag   { color: #82b1ff; }
-
 .cmd-block .ip     { color: #ffd740; }
-
 .cmd-block .host   { color: #ff6e6e; }
 
-
-
 code {
-
   font-family: var(--font-mono);
-
   font-size: 12px;
-
   background: var(--c-surface);
-
   border: 1px solid var(--c-border);
-
   padding: 1px 6px;
-
   border-radius: 3px;
-
   color: var(--c-heading);
-
 }
-
-
 
 /* ── INFO BOX ───────────────────────────────────────────── */
-
 .info-box {
-
   background: var(--c-surface);
-
   border: 1px solid var(--c-border-2);
-
   border-radius: 6px;
-
   padding: 20px 24px;
-
   margin: 12px 0 24px;
-
 }
-
-
 
 .info-box-title {
-
   font-size: 9px;
-
   letter-spacing: 0.16em;
-
   text-transform: uppercase;
-
   color: var(--c-muted);
-
   margin-bottom: 12px;
-
 }
-
-
 
 .info-row {
-
   display: flex;
-
   gap: 16px;
-
   padding: 5px 0;
-
   border-bottom: 1px solid var(--c-border);
-
   font-size: 12.5px;
-
 }
-
-
 
 .info-row:last-child { border-bottom: none; }
 
-
-
 .info-label {
-
   color: var(--c-muted);
-
   min-width: 80px;
-
   flex-shrink: 0;
-
   font-size: 11px;
-
 }
-
-
 
 .info-value { color: var(--c-heading); font-family: var(--font-mono); }
-
 .info-value.accent { color: var(--c-accent); }
 
-
-
 /* ── COLLAPSIBLE ────────────────────────────────────────── */
-
 .collapsible {
-
   border: 1px solid var(--c-border);
-
   border-radius: 5px;
-
   margin: 8px 0 20px;
-
   overflow: hidden;
-
 }
-
-
 
 .collapsible-header {
-
   display: flex;
-
   align-items: center;
-
   justify-content: space-between;
-
   padding: 12px 18px;
-
   cursor: pointer;
-
   background: var(--c-surface);
-
   user-select: none;
-
   transition: background var(--transition);
-
   gap: 12px;
-
 }
-
-
 
 .collapsible-header:hover {
-
   background: rgba(255,255,255,0.03);
-
 }
-
-
 
 .collapsible-label {
-
   font-size: 10px;
-
   letter-spacing: 0.14em;
-
   text-transform: uppercase;
-
   color: var(--c-muted);
-
   font-weight: 500;
-
   display: flex;
-
   align-items: center;
-
   gap: 10px;
-
 }
-
-
 
 .collapsible-label::before {
-
   content: '';
-
   display: inline-block;
-
   width: 6px; height: 6px;
-
   border-radius: 50%;
-
   background: var(--c-accent);
-
   flex-shrink: 0;
-
 }
-
-
 
 .collapsible-toggle {
-
   font-size: 11px;
-
   color: var(--c-muted);
-
   font-family: var(--font-mono);
-
   flex-shrink: 0;
-
   transition: color var(--transition), transform var(--transition);
-
   display: flex;
-
   align-items: center;
-
   gap: 6px;
-
 }
-
-
 
 .collapsible-toggle .chevron {
-
   display: inline-block;
-
   transition: transform 0.22s ease;
-
   opacity: 0.5;
-
   font-size: 14px;
-
   line-height: 1;
-
 }
-
-
 
 .collapsible.open .collapsible-toggle .chevron {
-
   transform: rotate(90deg);
-
   opacity: 1;
-
   color: var(--c-accent);
-
 }
-
-
 
 .collapsible-toggle .toggle-text {
-
   font-size: 10px;
-
   letter-spacing: 0.08em;
-
 }
-
-
 
 .collapsible.open .collapsible-toggle .toggle-text {
-
   color: var(--c-accent);
-
 }
-
-
 
 .collapsible-body {
-
   height: 0;
-
   overflow: hidden;
-
   transition: height 0.28s cubic-bezier(0.4, 0, 0.2, 1);
-
 }
-
-
 
 .collapsible.open .collapsible-body {
-
   /* height set by JS */
-
 }
-
-
 
 .collapsible-inner {
-
   padding: 20px 20px 16px;
-
   border-top: 1px solid var(--c-border);
-
 }
-
-
 
 /* hint collapsible has a subtle left accent */
-
 .collapsible.hint-collapsible {
-
   border-left: 2px solid rgba(59,158,255,0.3);
-
 }
-
-
 
 .collapsible.info-collapsible {
-
   border-left: 2px solid rgba(130,177,255,0.2);
-
 }
-
-
 
 .collapsible.info-collapsible .collapsible-label::before {
-
   background: #82b1ff;
-
 }
-
-
 
 /* ── WARGAME CARD ───────────────────────────────────────── */
-
 .wargame-card {
-
   border: 1px solid var(--c-border-2);
-
   border-radius: 6px;
-
   padding: 28px 32px;
-
   margin: 24px 0;
-
   background: var(--c-surface);
-
   cursor: pointer;
-
   transition: border-color var(--transition), transform var(--transition), box-shadow var(--transition);
-
   position: relative;
-
   overflow: hidden;
-
 }
-
-
 
 .wargame-card::before {
-
   content: '';
-
   position: absolute;
-
   top: 0; left: 0; right: 0;
-
   height: 1px;
-
   background: linear-gradient(90deg, var(--c-accent), transparent);
-
   opacity: 0;
-
   transition: opacity var(--transition);
-
 }
-
-
 
 .wargame-card:hover {
-
   transform: translateY(-2px);
-
   box-shadow: 0 8px 32px rgba(0,0,0,0.4);
-
 }
-
-
 
 .wargame-card:hover::before { opacity: 1; }
 
-
-
 .wargame-card-title {
-
   font-family: var(--font-display);
-
   font-size: 20px;
-
   font-weight: 700;
-
   color: var(--c-heading);
-
   margin-bottom: 8px;
-
   letter-spacing: -0.02em;
-
 }
-
-
 
 .wargame-card-desc {
-
   color: var(--c-text);
-
   font-size: 12.5px;
-
   line-height: 1.8;
-
   margin-bottom: 20px;
-
 }
-
-
 
 .wargame-card-meta {
-
   display: flex;
-
   gap: 24px;
-
   font-size: 11px;
-
   color: var(--c-muted);
-
 }
-
-
 
 .wargame-card-meta span { display: flex; align-items: center; gap: 6px; }
 
-
-
 .badge {
-
   display: inline-flex;
-
   align-items: center;
-
   padding: 2px 8px;
-
   background: var(--c-accent-dim);
-
   color: var(--c-accent);
-
   border: 1px solid rgba(59,158,255,0.25);
-
   border-radius: 3px;
-
   font-size: 10px;
-
   letter-spacing: 0.08em;
-
   text-transform: uppercase;
-
 }
-
-
 
 .btn {
-
   display: inline-flex;
-
   align-items: center;
-
   gap: 8px;
-
   padding: 9px 18px;
-
   border: 1px solid var(--c-accent);
-
   color: var(--c-accent);
-
   border-radius: 4px;
-
   font-family: var(--font-mono);
-
   font-size: 12px;
-
   cursor: pointer;
-
   transition: background var(--transition), color var(--transition);
-
   margin-top: 4px;
-
 }
-
-
 
 .btn:hover { background: var(--c-accent); color: #000; }
 
-
-
 /* ── LEVEL NAVIGATION ───────────────────────────────────── */
-
 .level-nav {
-
   display: flex;
-
   justify-content: space-between;
-
   align-items: center;
-
   margin-top: 52px;
-
   padding-top: 24px;
-
   border-top: 1px solid var(--c-border);
-
 }
-
-
 
 .level-nav-btn {
-
   font-family: var(--font-mono);
-
   font-size: 12px;
-
   color: var(--c-muted);
-
   cursor: pointer;
-
   transition: color var(--transition);
-
   display: flex;
-
   align-items: center;
-
   gap: 8px;
-
   padding: 6px 0;
-
 }
-
-
 
 .level-nav-btn:hover { color: var(--c-accent); }
-
 .level-nav-btn.disabled { opacity: 0.3; pointer-events: none; }
 
-
-
 /* ── LEVEL TABLE ────────────────────────────────────────── */
-
 .level-table {
-
   width: 100%;
-
   border-collapse: collapse;
-
   font-size: 12px;
-
   margin: 16px 0;
-
 }
-
-
 
 .level-table th {
-
   text-align: left;
-
   font-size: 9px;
-
   letter-spacing: 0.14em;
-
   text-transform: uppercase;
-
   color: var(--c-muted);
-
   padding: 8px 12px;
-
   border-bottom: 1px solid var(--c-border);
-
   font-weight: 400;
-
 }
-
-
 
 .level-table td {
-
   padding: 10px 12px;
-
   border-bottom: 1px solid var(--c-border);
-
   color: var(--c-text);
-
   vertical-align: top;
-
 }
-
-
 
 .level-table tr:hover td { background: rgba(255,255,255,0.015); }
 
-
-
 .level-table .level-link {
-
   color: var(--c-accent);
-
   cursor: pointer;
-
 }
-
-
 
 .level-table .level-link:hover { text-decoration: underline; }
-
 .level-table .flag-cell { color: #82b1ff; font-size: 11.5px; }
-
 .tbd-row td { opacity: 0.35; }
 
-
-
 /* ── RULES LIST ─────────────────────────────────────────── */
-
 .rules-list { list-style: none; margin: 12px 0; }
 
-
-
 .rules-list li {
-
   padding: 10px 0;
-
   border-bottom: 1px solid var(--c-border);
-
   display: flex;
-
   gap: 14px;
-
   font-size: 12.5px;
-
   color: var(--c-text);
-
 }
-
-
 
 .rules-list li::before {
-
   content: '/';
-
   color: var(--c-accent);
-
   flex-shrink: 0;
-
   opacity: 0.6;
-
 }
-
-
 
 /* ── LANGUAGE TOGGLE ───────────────────────────────────── */
-
 .lang-btn {
-
   font-family: var(--font-mono);
-
   font-size: 10px;
-
   color: var(--c-muted);
-
   border: 1px solid var(--c-border);
-
   padding: 2px 6px;
-
   border-radius: 3px;
-
   transition: all var(--transition);
-
 }
-
-
 
 .lang-btn:hover { color: var(--c-text); border-color: var(--c-muted); }
-
 .lang-btn.active { color: var(--c-accent); border-color: var(--c-accent); background: var(--c-accent-dim); }
 
-
-
 /* ── RESPONSIVE ─────────────────────────────────────────── */
-
 @media (max-width: 700px) {
-
   .sidebar { width: 100%; position: relative; height: auto; }
-
   .content { margin-left: 0; padding: 32px 24px; }
-
   .app { flex-direction: column; }
-
 }
 
-
-
 </style>
-
 </head>
-
 <body>
-
-
 
 <div class="app">
 
-
-
   <!-- ═══════════════════════ SIDEBAR ═══════════════════════ -->
-
   <aside class="sidebar">
 
-
-
     <div class="sidebar-logo" onclick="navigate('home')" style="cursor:pointer;">
-
       <div class="logo-name">
-
         <div class="logo-icon"></div>
-
         <span><span class="bit">bit</span><span class="flip">flip</span></span>
-
       </div>
-
       <div class="logo-tagline">CTF Platform</div>
-
     </div>
-
-
 
     <div style="padding: 16px 24px; border-top: 1px solid var(--c-border); border-bottom: 1px solid var(--c-border); display: flex; gap: 8px;">
-
       <button class="lang-btn" id="lang-en" onclick="setLang('en')">EN</button>
-
       <button class="lang-btn" id="lang-fr" onclick="setLang('fr')">FR</button>
-
     </div>
 
-
-
     <nav class="sidebar-nav">
-
       <div class="nav-item" onclick="navigate('home')" id="nav-home">Home</div>
-
       <div class="nav-section-label" id="label-wargames" onclick="navigate('nmapwire')" style="cursor:pointer; transition: color 0.18s ease;" onmouseover="this.style.color='var(--c-text)'" onmouseout="this.style.color=''">Wargames</div>
 
-
-
       <div class="nav-item" id="nav-nmapwire" onclick="navigate('nmapwire')">
-
         <span id="label-nmapwire">NmapWire</span>
-
         <span class="nav-arrow" id="nav-arrow" onclick="event.stopPropagation(); toggleLevels()">›</span>
-
       </div>
-
-
 
       <div class="nav-levels" id="nav-levels">
-
         <!-- levels injected by JS -->
-
       </div>
-
-
 
       <div class="nav-divider"></div>
 
-
-
       <div class="nav-item" onclick="navigate('rules')" id="nav-rules">Rules</div>
-
       <div class="nav-item" onclick="navigate('info')" id="nav-info">Info</div>
-
     </nav>
-
-
 
   </aside>
 
-
-
   <!-- ═══════════════════════ CONTENT ═══════════════════════ -->
-
   <main class="content" id="content"></main>
-
-
 
 </div>
 
-
-
 <script>
-
-
 
 /* ── DATA ──────────────────────────────────────────────────── */
 
-
-
 const HOST = '5.tcp.eu.ngrok.io';
-
 const PORT = 15206;
-
-
 
 let currentLang = 'en';
 
-
-
 const i18n = {
-
   en: {
-
     home: 'Home',
-
     wargames: 'Wargames',
-
     rules: 'Rules',
-
     info: 'Info',
-
     play: 'Play NmapWire',
-
     about: 'About',
-
     howToConnect: 'How to Connect',
-
     levelTable: 'Level Table',
-
     level: 'Level',
-
     concept: 'Concept',
-
     target: 'Target',
-
     goal: 'Level Goal',
-
     connectionInfo: 'Connection Info',
-
     sshInto: 'SSH into this level',
-
     host: 'Host',
-
     port: 'Port',
-
     user: 'User',
-
     password: 'Password',
-
     firstStep: 'First step',
-
     expand: 'expand',
-
     collapse: 'collapse',
-
     hint: 'Hint',
-
     eduBackground: 'Educational Background',
-
     prev: 'Previous',
-
     next: 'Next',
-
     underConstruction: 'This level is under construction. Check back soon.',
-
     win: 'WIN',
-
     socials: 'Socials',
-
     madeBy: 'Made by Mohammed-Reda Jdaini',
-
     gameRules: 'Game Rules',
-
     platform: 'Platform',
-
     wargame: 'Wargame',
-
     server: 'Server',
-
     institution: 'Institution',
-
     faculty: 'Faculty',
-
     filiere: 'Filière',
-
     module: 'Module',
-
     homeTitle: 'Wargames',
-
     homeSubtitle: 'Learn security concepts through progressive SSH challenges',
-
     homeDesc: 'The wargames hosted on bitflip are designed to help you learn and practice network reconnaissance in the form of hands-on, level-based challenges. Each game is played entirely over SSH with no setup required on your end.',
-
     homePick: 'Pick a game below to get started.',
-
     nmapwireDesc: 'An UnderTheWire-style SSH wargame built around the Nmap network scanner. Each level introduces exactly one new nmap flag or concept. Scan Docker containers on an internal network, extract a password from the scan output, and advance to the next level.',
-
     nmapwireMeta: '18 levels · Nmap / Network Recon · Beginner → Intermediate',
-
     nmapwireAbout: 'NmapWire is organised in levels. You start at Level 0 and work your way to the WIN. Each level requires you to SSH into the server, scan a target on the internal network using nmap, and extract a password hidden in the scan output to advance to the next level.',
-
     nmapwireExtra: 'Each level page tells you exactly what to scan and gives you a hint if you are stuck. The educational background section explains the concept being practiced.'
-
   },
-
   fr: {
-
     home: 'Accueil',
-
     wargames: 'Jeux de guerre',
-
     rules: 'Règles',
-
     info: 'Infos',
-
     play: 'Jouer à NmapWire',
-
     about: 'À propos',
-
     howToConnect: 'Comment se connecter',
-
     levelTable: 'Tableau des niveaux',
-
     level: 'Niveau',
-
     concept: 'Concept',
-
     target: 'Cible',
-
     goal: 'Objectif du niveau',
-
     connectionInfo: 'Infos de connexion',
-
     sshInto: 'SSH dans ce niveau',
-
     host: 'Hôte',
-
     port: 'Port',
-
     user: 'Utilisateur',
-
     password: 'Mot de passe',
-
     firstStep: 'Première étape',
-
     expand: 'développer',
-
     collapse: 'réduire',
-
     hint: 'Indice',
-
     eduBackground: 'Contexte pédagogique',
-
     prev: 'Précédent',
-
     next: 'Suivant',
-
     underConstruction: 'Ce niveau est en cours de construction. Revenez bientôt.',
-
     win: 'VICTOIRE',
-
     socials: 'Réseaux sociaux',
-
     madeBy: 'Réalisé par Mohammed-Reda Jdaini',
-
     gameRules: 'Règles du jeu',
-
     platform: 'Plateforme',
-
     wargame: 'Wargame',
-
     server: 'Serveur',
-
     institution: 'Institution',
-
     faculty: 'Faculté',
-
     filiere: 'Filière',
-
     module: 'Module',
-
     homeTitle: 'Jeux de guerre',
-
     homeSubtitle: 'Apprenez les concepts de sécurité à travers des défis SSH progressifs',
-
     homeDesc: 'Les wargames hébergés sur bitflip sont conçus pour vous aider à apprendre et à pratiquer la reconnaissance réseau sous forme de défis pratiques par niveaux. Chaque jeu se joue entièrement via SSH sans aucune configuration requise de votre part.',
-
     homePick: 'Choisissez un jeu ci-dessous pour commencer.',
-
     nmapwireDesc: 'Un wargame SSH de style UnderTheWire construit autour du scanner réseau Nmap. Chaque niveau introduit exactement un nouveau drapeau ou concept nmap. Scannez des conteneurs Docker sur un réseau interne, extrayez un mot de passe du résultat du scan et passez au niveau suivant.',
-
     nmapwireMeta: '18 niveaux · Nmap / Reconnaissance réseau · Débutant → Intermédiaire',
-
     nmapwireAbout: 'NmapWire est organisé en niveaux. Vous commencez au niveau 0 et progressez jusqu\'à la victoire. Chaque niveau nécessite de vous connecter en SSH au serveur, de scanner une cible sur le réseau interne à l\'aide de nmap et d\'extraire un mot de passe caché dans le résultat du scan pour passer au niveau suivant.',
-
     nmapwireExtra: 'Chaque page de niveau vous indique exactement quoi scanner et vous donne un indice si vous êtes bloqué. La section contexte pédagogique explique le concept pratiqué.'
-
   }
-
 };
 
-
-
 const levels = [
-
   {
-
     n: 0,
-
     concept: { en: 'Orientation', fr: 'Orientation' },
-
     target: null,
-
     command: 'cat ~/note.txt',
-
     password: 'level0',
-
     goal: {
-
       en: `Welcome to NmapWire. This is the entry level. No scanning required yet.\n\nYour only task is to read the file in your home directory. It contains everything you need to get started, including the password for the next level.`,
-
       fr: `Bienvenue sur NmapWire. C'est le niveau d'entrée. Aucun scan n'est encore requis.\n\nVotre seule tâche est de lire le fichier dans votre répertoire personnel. Il contient tout ce dont vous avez besoin pour commencer, y compris le mot de passe pour le niveau suivant.`
-
     },
-
     hint: {
-
       en: `Once you are logged in, run:\n  cat ~/note.txt\n\nThe password for level1 is inside.`,
-
       fr: `Une fois connecté, exécutez :\n  cat ~/note.txt\n\nLe mot de passe pour le niveau 1 se trouve à l'intérieur.`
-
     },
-
     info: null
-
   },
-
   {
-
     n: 1,
-
     concept: { en: 'Ping sweep', fr: 'Balayage Ping' },
-
     target: '172.20.0.0/24',
-
     command: 'nmap -sn 172.20.0.0/24',
-
     goal: {
-
       en: `A machine is running somewhere on the internal network 172.20.0.0/24.\n\nYou don't know its exact IP yet. Use nmap to discover which hosts are alive on the subnet. The hostname of the active machine is the password for the next level.`,
-
       fr: `Une machine tourne quelque part sur le réseau interne 172.20.0.0/24.\n\nVous ne connaissez pas encore son IP exacte. Utilisez nmap pour découvrir quels hôtes sont actifs sur le sous-réseau. Le nom d'hôte de la machine active est le mot de passe pour le niveau suivant.`
-
     },
-
     hint: {
-
       en: `The -sn flag tells nmap to do a ping sweep. It sends probes to each address in the range and reports which ones respond, without scanning any ports.\n\n  nmap -sn 172.20.0.0/24\n\nLook at the hostnames in the output.`,
-
       fr: `Le drapeau -sn indique à nmap d'effectuer un balayage ping. Il envoie des sondes à chaque adresse de la plage et indique celles qui répondent, sans scanner de ports.\n\n  nmap -sn 172.20.0.0/24\n\nRegardez les noms d'hôtes dans la sortie.`
-
     },
-
     info: {
-
       en: `A ping sweep (also called host discovery) is how you find live machines on a network before deciding what to scan. The -sn flag disables port scanning entirely. Nmap only checks whether each host responds to its probes. This is fast, quiet, and a standard first step in any reconnaissance exercise.`,
-
       fr: `Un balayage ping (également appelé découverte d'hôtes) est la façon dont vous trouvez des machines actives sur un réseau avant de décider quoi scanner. Le drapeau -sn désactive entièrement le scan de ports. Nmap vérifie seulement si chaque hôte répond à ses sondes. C'est rapide, discret et constitue une première étape standard dans tout exercice de reconnaissance.`
-
     }
-
   },
-
   {
-
     n: 2,
-
     concept: { en: 'Port range', fr: 'Plage de ports' },
-
     target: '172.20.0.10',
-
     command: 'nmap -p 4400-4500 172.20.0.10',
-
     goal: {
-
       en: `The target machine is at 172.20.0.10. A service is listening on a port somewhere between 4400 and 4500.\n\nScan only that range and find the open port. The port number itself is the password for the next level.`,
-
       fr: `La machine cible est à l'adresse 172.20.0.10. Un service écoute sur un port situé entre 4400 et 4500.\n\nScannez uniquement cette plage et trouvez le port ouvert. Le numéro du port lui-même est le mot de passe pour le niveau suivant.`
-
     },
-
     hint: {
-
       en: `Use -p to specify a port range:\n\n  nmap -p 4400-4500 172.20.0.10\n\nLook for a port marked "open" in the output.`,
-
       fr: `Utilisez -p pour spécifier une plage de ports :\n\n  nmap -p 4400-4500 172.20.0.10\n\nCherchez un port marqué "open" dans la sortie.`
-
     },
-
     info: {
-
       en: `By default, nmap scans the 1000 most common ports. Specifying a range with -p lets you narrow the scan to exactly where you expect a service to be. You can scan a single port (-p 80), a range (-p 4400-4500) or a comma-separated list (-p 22,80,443). Focused scans are faster and less noisy.`,
-
       fr: `Par défaut, nmap scanne les 1000 ports les plus courants. Spécifier une plage avec -p vous permet de restreindre le scan exactement là où vous attendez un service. Vous pouvez scanner un seul port (-p 80), une plage (-p 4400-4500) ou une liste séparée par des virgules (-p 22,80,443). Les scans ciblés sont plus rapides et moins bruyants.`
-
     }
-
   },
-
   {
-
     n: 3,
-
     concept: { en: 'All ports', fr: 'Tous les ports' },
-
     target: '172.20.0.10',
-
     command: 'nmap -p- 172.20.0.10',
-
     goal: {
-
       en: `Something is listening on 172.20.0.10, but on a very unusual port, one that a default nmap scan would completely miss.\n\nScan all 65535 ports and find it. The port number is the password.`,
-
       fr: `Quelque chose écoute sur 172.20.0.10, mais sur un port très inhabituel, un port qu'un scan nmap par défaut manquerait complètement.\n\nScannez les 65535 ports et trouvez-le. Le numéro du port est le mot de passe.`
-
     },
-
     hint: {
-
       en: `The shorthand -p- tells nmap to scan every port from 1 to 65535:\n\n  nmap -p- 172.20.0.10\n\nBe patient: a full port scan takes longer than a default scan.`,
-
       fr: `Le raccourci -p- indique à nmap de scanner chaque port de 1 à 65535 :\n\n  nmap -p- 172.20.0.10\n\nSoyez patient : un scan complet de ports prend plus de temps qu'un scan par défaut.`
-
     },
-
     info: {
-
       en: `A default nmap scan only checks the 1000 most commonly used ports. Attackers often run services on non-standard ports specifically to avoid these scans. The -p- flag instructs nmap to scan all 65535 TCP ports, ensuring nothing is missed. This scan takes more time but provides complete coverage.`,
-
       fr: `Un scan nmap par défaut ne vérifie que les 1000 ports les plus couramment utilisés. Les attaquants font souvent tourner des services sur des ports non standard spécifiquement pour éviter ces scans. Le drapeau -p- demande à nmap de scanner les 65535 ports TCP, garantissant que rien n'est oublié. Ce scan prend plus de temps mais offre une couverture complète.`
-
     }
-
   },
-
   {
-
     n: 4,
-
     concept: { en: 'Fast scan', fr: 'Scan rapide' },
-
     target: '172.20.0.10',
-
     command: 'nmap -F 172.20.0.10',
-
     goal: {
-
       en: `You need to get a quick picture of what's running on 172.20.0.10. Use nmap's fast scan mode to check only the top 100 most common ports.\n\nThe password is the open port number combined with its service name (e.g. 22ssh).`,
-
       fr: `Vous devez obtenir un aperçu rapide de ce qui tourne sur 172.20.0.10. Utilisez le mode scan rapide de nmap pour vérifier uniquement les 100 ports les plus courants.\n\nLe mot de passe est le numéro du port ouvert combiné à son nom de service (ex: 22ssh).`
-
     },
-
     hint: {
-
       en: `The -F flag enables fast mode: it scans only the top 100 ports instead of the default 1000:\n\n  nmap -F 172.20.0.10\n\nLook at the PORT and SERVICE columns in the output. Combine them to form the password.`,
-
       fr: `Le drapeau -F active le mode rapide : il scanne uniquement les 100 ports les plus courants au lieu des 1000 par défaut :\n\n  nmap -F 172.20.0.10\n\nRegardez les colonnes PORT et SERVICE dans la sortie. Combinez-les pour former le mot de passe.`
-
     },
-
     info: {
-
       en: `The -F (fast) flag reduces the number of scanned ports from 1000 to 100, making the scan roughly 10x faster. This is useful for a quick initial overview when time matters. The trade-off is coverage: unusual services on non-standard ports will be missed. Use -F for speed, default for balance, -p- for thoroughness.`,
-
       fr: `Le drapeau -F (rapide) réduit le nombre de ports scannés de 1000 à 100, ce qui rend le scan environ 10 fois plus rapide. C'est utile pour un premier aperçu rapide quand le temps compte. Le compromis est la couverture : les services inhabituels sur des ports non standard seront manqués. Utilisez -F pour la rapidité, le défaut pour l'équilibre, -p- pour la minutie.`
-
     }
-
   },
-
   {
-
     n: 5,
-
     concept: { en: 'SYN scan', fr: 'Scan SYN' },
-
     target: '172.20.0.11',
-
     command: 'sudo nmap -sS 172.20.0.11',
-
     goal: {
-
       en: `The target 172.20.0.11 has a service running. Perform a SYN scan to discover it. The service name is the password for the next level.\n\nNote: a SYN scan requires elevated privileges.`,
-
       fr: `La cible 172.20.0.11 a un service qui tourne. Effectuez un scan SYN pour le découvrir. Le nom du service est le mot de passe pour le niveau suivant.\n\nNote : un scan SYN nécessite des privilèges élevés.`
-
     },
-
     hint: {
-
       en: `The -sS flag performs a TCP SYN (stealth) scan. It requires root or sudo:\n\n  sudo nmap -sS 172.20.0.11\n\nLook at the SERVICE column for the open port.`,
-
       fr: `Le drapeau -sS effectue un scan TCP SYN (furtif). Il nécessite root ou sudo :\n\n  sudo nmap -sS 172.20.0.11\n\nRegardez la colonne SERVICE pour le port ouvert.`
-
     },
-
     info: {
-
       en: `A SYN scan (also called a half-open or stealth scan) works by sending a TCP SYN packet and waiting for the response. If the port is open, the target replies with SYN-ACK. Nmap immediately sends RST to tear down the connection without completing the handshake. This means no full TCP connection is ever established, making it faster and less likely to appear in application logs. It requires raw socket access, which is why sudo is needed.`,
-
       fr: `Un scan SYN (également appelé scan demi-ouvert ou furtif) fonctionne en envoyant un paquet TCP SYN et en attendant la réponse. Si le port est ouvert, la cible répond par un SYN-ACK. Nmap envoie immédiatement un RST pour interrompre la connexion sans terminer le handshake. Cela signifie qu'aucune connexion TCP complète n'est jamais établie, ce qui le rend plus rapide et moins susceptible d'apparaître dans les journaux d'application. Il nécessite un accès direct aux sockets, c'est pourquoi sudo est nécessaire.`
-
     }
-
   },
-
   {
-
     n: 6,
-
     concept: { en: 'TCP connect scan', fr: 'Scan TCP connect' },
-
     target: '172.20.0.12',
-
     command: 'nmap -sT 172.20.0.12',
-
     goal: {
-
       en: `The target is at 172.20.0.12. At this level you do not have access to sudo. Use a TCP connect scan instead of a SYN scan to discover what's running.\n\nThe password is the port number combined with the service name.`,
-
       fr: `La cible est à l'adresse 172.20.0.12. À ce niveau, vous n'avez pas accès à sudo. Utilisez un scan TCP connect au lieu d'un scan SYN pour découvrir ce qui tourne.\n\nLe mot de passe est le numéro du port combiné au nom du service.`
-
     },
-
     hint: {
-
       en: `The -sT flag uses full TCP connect() calls instead of raw sockets, so it works without root privileges:\n\n  nmap -sT 172.20.0.12\n\nCombine the open port number and service name to form the password.`,
-
       fr: `Le drapeau -sT utilise des appels TCP connect() complets au lieu de sockets brutes, il fonctionne donc sans privilèges root :\n\n  nmap -sT 172.20.0.12\n\nCombinez le numéro du port ouvert et le nom du service pour former le mot de passe.`
-
     },
-
     info: {
-
       en: `A TCP connect scan completes the full three-way handshake (SYN → SYN-ACK → ACK) to determine whether a port is open. Unlike -sS, it doesn't need raw socket access and works as any regular user. The downside is that the full connection is more visible. It will appear in application and system logs on the target. Use -sT when you lack root access, or when you specifically need completed connections.`,
-
       fr: `Un scan TCP connect complète le handshake à trois voies (SYN → SYN-ACK → ACK) pour déterminer si un port est ouvert. Contrairement à -sS, il n'a pas besoin d'un accès direct aux sockets et fonctionne comme n'importe quel utilisateur régulier. L'inconvénient est que la connexion complète est plus visible. Elle apparaîtra dans les journaux d'application et du système sur la cible. Utilisez -sT quand vous n'avez pas d'accès root, ou quand vous avez spécifiquement besoin de connexions terminées.`
-
     }
-
   },
-
   {
-
     n: 7,
-
     concept: { en: 'UDP scan', fr: 'Scan UDP' },
-
     target: '172.20.0.13',
-
     command: 'sudo nmap -sU -p 53 172.20.0.13',
-
     goal: {
-
       en: `Not all services use TCP. The target at 172.20.0.13 is running something over UDP. Scan UDP port 53 specifically and identify what's there.\n\nThe password is the port number combined with the service name.`,
-
       fr: `Tous les services n'utilisent pas TCP. La cible à 172.20.0.13 fait tourner quelque chose sur UDP. Scannez spécifiquement le port UDP 53 et identifiez ce qui s'y trouve.\n\nLe mot de passe est le numéro du port combiné au nom du service.`
-
     },
-
     hint: {
-
       en: `The -sU flag enables UDP scanning. Combine it with -p to target a specific port:\n\n  sudo nmap -sU -p 53 172.20.0.13\n\nUDP scanning is slower than TCP. Be patient.`,
-
       fr: `Le drapeau -sU active le scan UDP. Combinez-le avec -p pour cibler un port spécifique :\n\n  sudo nmap -sU -p 53 172.20.0.13\n\nLe scan UDP est plus lent que le TCP. Soyez patient.`
-
     },
-
     info: {
-
       en: `Many critical services run over UDP: DNS (53), DHCP (67/68), SNMP (161), TFTP (69). Because UDP is connectionless, nmap probes are unanswered for open ports. Silence means open or filtered. Closed ports typically reply with an ICMP port-unreachable message. UDP scanning is inherently slower and less reliable than TCP, and requires root privileges because it uses raw sockets. Always include UDP in thorough reconnaissance.`,
-
       fr: `De nombreux services critiques fonctionnent sur UDP : DNS (53), DHCP (67/68), SNMP (161), TFTP (69). Comme UDP est sans connexion, les sondes nmap restent sans réponse pour les ports ouverts. Le silence signifie ouvert ou filtré. Les ports fermés répondent généralement par un message ICMP port-unreachable. Le scan UDP est intrinsèquement plus lent et moins fiable que le TCP, et nécessite des privilèges root car il utilise des sockets brutes. Incluez toujours UDP dans une reconnaissance approfondie.`
-
     }
-
   },
-
   {
-
     n: 8,
-
     concept: { en: 'Version detection', fr: 'Détection de version' },
-
     target: '172.20.0.14',
-
     command: 'nmap -sV 172.20.0.14',
-
     goal: {
-
       en: `There's an FTP server running on 172.20.0.14. Use nmap's version detection to find out exactly which software and version it is running.\n\nThe password is the software name combined with the version number, no spaces (e.g. softwarex.y.z).`,
-
       fr: `Il y a un serveur FTP qui tourne sur 172.20.0.14. Utilisez la détection de version de nmap pour découvrir exactement quel logiciel et quelle version il utilise.\n\nLe mot de passe est le nom du logiciel combiné au numéro de version, sans espace (ex: logicielx.y.z).`
-
     },
-
     hint: {
-
       en: `The -sV flag probes open ports to determine the service software and version:\n\n  nmap -sV 172.20.0.14\n\nLook at the VERSION column for the open port. Combine the name and version into one string.`,
-
       fr: `Le drapeau -sV sonde les ports ouverts pour déterminer le logiciel du service et sa version :\n\n  nmap -sV 172.20.0.14\n\nRegardez la colonne VERSION pour le port ouvert. Combinez le nom et la version en une seule chaîne.`
-
     },
-
     info: {
-
       en: `The -sV flag activates service version detection. After finding an open port, nmap sends a series of probes and compares the responses to its database of known service fingerprints. The result appears as a version string in the VERSION column. Version information is extremely valuable, it tells you exactly what software is running, enabling you to look up known vulnerabilities for that specific version. This is standard practice in vulnerability assessments.`,
-
       fr: `Le drapeau -sV active la détection de version de service. Après avoir trouvé un port ouvert, nmap envoie une série de sondes et compare les réponses à sa base de données d'empreintes de services connus. Le résultat apparaît sous forme de chaîne de version dans la colonne VERSION. Les informations de version sont extrêmement précieuses, elles vous indiquent exactement quel logiciel tourne, vous permettant de rechercher les vulnérables connues pour cette version spécifique.`
-
     }
-
   },
-
   {
-
     n: 9,
-
     concept: { en: 'OS detection', fr: 'Détection d\'OS' },
-
     target: '172.20.0.14',
-
     command: 'sudo nmap -O 172.20.0.14',
-
     goal: {
-
       en: `The same target from the last level is back: 172.20.0.14. This time, use nmap's OS detection to figure out what operating system it is running.\n\nThe password is the OS family name (one word, capitalised as shown in the output).`,
-
       fr: `La même cible du dernier niveau est de retour : 172.20.0.14. Cette fois, utilisez la détection d'OS de nmap pour découvrir quel système d'exploitation il utilise.\n\nLe mot de passe est le nom de la famille d'OS (un mot, avec majuscule comme indiqué dans la sortie).`
-
     },
-
     hint: {
-
       en: `The -O flag enables OS detection. It requires sudo:\n\n  sudo nmap -O 172.20.0.14\n\nLook for the "OS details" or "Running" line in the output.`,
-
       fr: `Le drapeau -O active la détection d'OS. Il nécessite sudo :\n\n  sudo nmap -O 172.20.0.14\n\nCherchez la ligne "OS details" ou "Running" dans la sortie.`
-
     },
-
     info: {
-
       en: `OS detection works by analysing subtle differences in how operating systems implement the TCP/IP stack. nmap sends a series of carefully crafted probes and compares the responses, including TTL values, window sizes, IP flags, and TCP options, against a reference database of thousands of known OS fingerprints. The result is a best guess at the OS family and version. OS detection requires at least one open and one closed port, and raw socket access, which is why sudo is needed.`,
-
       fr: `La détection d'OS fonctionne en analysant les différences subtiles dans la façon dont les systèmes d'exploitation implémentent la pile TCP/IP. nmap envoie une série de sondes soigneusement conçues et compare les réponses (valeurs TTL, tailles de fenêtre, indicateurs IP et options TCP) à une base de données de référence de milliers d'empreintes d'OS connues. Le résultat est une estimation de la famille et de la version de l'OS.`
-
     }
-
   },
-
   {
-
     n: 10,
-
     concept: { en: 'Aggressive scan', fr: 'Scan agressif' },
-
     target: '172.20.0.14',
-
     command: 'sudo nmap -A 172.20.0.14',
-
     goal: {
-
       en: `Run an aggressive scan against 172.20.0.14. This combines OS detection, version detection, script scanning, and traceroute in one command.\n\nLook in the output for a "Service Info" line containing an OS field. That OS value is the password.`,
-
       fr: `Exécutez un scan agressif contre 172.20.0.14. Cela combine la détection d'OS, la détection de version, le scan de scripts et le traceroute en une seule commande.\n\nCherchez dans la sortie une ligne "Service Info" contenant un champ OS. Cette valeur d'OS est le mot de passe.`
-
     },
-
     hint: {
-
       en: `The -A flag enables aggressive mode, shorthand for -sV -O -sC --traceroute:\n\n  sudo nmap -A 172.20.0.14\n\nSearch for "Service Info:" in the output. The OS field value is the password.`,
-
       fr: `Le drapeau -A active le mode agressif, raccourci pour -sV -O -sC --traceroute :\n\n  sudo nmap -A 172.20.0.14\n\nCherchez "Service Info:" dans la sortie. La valeur du champ OS est le mot de passe.`
-
     },
-
     info: {
-
       en: `The -A flag is a convenience switch that enables: version detection (-sV), OS detection (-O), default NSE scripts (-sC), and traceroute. It produces a rich, detailed output and is commonly used for thorough single-target reconnaissance. The "Service Info" field comes from the NSE scripts interacting with the service banner and can reveal OS and platform details that differ from the raw OS detection guess.`,
-
       fr: `Le drapeau -A est un commutateur de commodité qui active : la détection de version (-sV), la détection d'OS (-O), les scripts NSE par défaut (-sC) et le traceroute. Il produit une sortie riche et détaillée. Le champ "Service Info" provient des scripts NSE interagissant avec la bannière du service et peut révéler des détails sur l'OS et la plateforme.`
-
     }
-
   },
-
   {
-
     n: 11,
-
     concept: { en: 'Timing templates', fr: 'Modèles de timing' },
-
     target: '172.20.0.11',
-
     command: 'nmap -T2 -p 21 172.20.0.11',
-
     goal: {
-
       en: `Scan port 21 on 172.20.0.11 using timing template 2 (Polite mode). There's nothing special to extract from the output this time.\n\nThe flag value you used in the command is the password for the next level.`,
-
       fr: `Scannez le port 21 sur 172.20.0.11 en utilisant le modèle de timing 2 (mode Polite). Il n'y a rien de spécial à extraire de la sortie cette fois.\n\nLa valeur du drapeau que vous avez utilisé dans la commande est le mot de passe pour le niveau suivant.`
-
     },
-
     hint: {
-
       en: `The -T flag sets the timing aggressiveness (0 through 5):\n\n  nmap -T2 -p 21 172.20.0.11\n\nThe password is the timing flag you just used.`,
-
       fr: `Le drapeau -T définit l'agressivité du timing (de 0 à 5) :\n\n  nmap -T2 -p 21 172.20.0.11\n\nLe mot de passe est le drapeau de timing que vous venez d'utiliser.`
-
     },
-
     info: {
-
       en: `nmap's -T flag controls scan speed and aggressiveness on a scale from 0 to 5:\n  T0  Paranoid    very slow, evades IDS\n  T1  Sneaky      slow, IDS-evasion focused\n  T2  Polite      slowed down, less bandwidth\n  T3  Normal      default\n  T4  Aggressive  faster, assumes reliable network\n  T5  Insane      maximum speed, may miss results\n\nChoosing the right timing template is a trade-off between speed, accuracy, and stealth.`,
-
       fr: `Le drapeau -T de nmap contrôle la vitesse et l'agressivité du scan sur une échelle de 0 à 5 :\n  T0 Paranoid : très lent, évite les IDS\n  T1 Sneaky : lent, axé sur l'évasion d'IDS\n  T2 Polite : ralenti, moins de bande passante\n  T3 Normal : par défaut\n  T4 Aggressive : plus rapide, suppose un réseau fiable\n  T5 Insane : vitesse maximale, peut manquer des résultats`
-
     }
-
   },
-
-  {
-
-    n: 12, concept: { en: '-Pn and -n', fr: '-Pn et -n' }, target: 'TBD', command: 'TBD', goal: null, hint: null, info: null, tbd: true
-
-  },
-
-  { n: 13, concept: { en: '--reason', fr: '--reason' }, target: 'TBD', command: 'TBD', tbd: true },
-
-  { n: 14, concept: { en: 'Output formats', fr: 'Formats de sortie' }, target: 'TBD', command: 'TBD', tbd: true },
-
-  { n: 15, concept: { en: 'NSE default scripts', fr: 'Scripts NSE par défaut' }, target: 'TBD', command: 'TBD', tbd: true },
-
-  { n: 16, concept: { en: 'Vuln scripts', fr: 'Scripts de vuln' }, target: 'TBD', command: 'TBD', tbd: true },
-
-  { n: 17, concept: { en: 'http-enum', fr: 'http-enum' }, target: 'TBD', command: 'TBD', tbd: true, win: true }
-
-];
-
-
+    {
+      n: 12,
+      concept: { en: '-Pn and -n', fr: '-Pn et -n' },
+      target: '172.20.0.16',
+      command: 'nmap -Pn -n 172.20.0.16',
+      goal: {
+        en: `Intelligence reports a host at 172.20.0.16 — but every ping probe comes back silent. Dead air. The host appears down.\n\nOr is it? Sometimes a firewall silently drops ICMP packets, making a live host look invisible to a standard nmap ping sweep. You need to tell nmap to skip the ping check entirely and scan anyway.\n\nYou also don't need nmap wasting time on reverse DNS lookups — strip that out too. The password to level13 is the open port number.`,
+        fr: `Les renseignements signalent un hôte à l'adresse 172.20.0.16 — mais chaque sonde ping revient silencieuse. Silence radio. L'hôte semble hors ligne.\n\nOu l'est-il ? Parfois, un pare-feu rejette silencieusement les paquets ICMP, rendant un hôte actif invisible pour un balayage ping nmap standard. Vous devez dire à nmap d'ignorer complètement la vérification du ping et de scanner quand même.\n\nVous n'avez pas non plus besoin que nmap perde du temps avec les recherches DNS inversées — supprimez cela aussi. Le mot de passe pour le niveau 13 est le numéro du port ouvert.`
+      },
+      hint: {
+        en: `Two flags. One skips the ping check. One skips DNS.\n\n  -Pn   treat host as up, skip host discovery\n  -n    no DNS resolution\n\nTarget: 172.20.0.16\n\nThe password is the open port number you find.`,
+        fr: `Deux drapeaux. L'un ignore la vérification du ping. L'autre ignore le DNS.\n\n  -Pn   traite l'hôte comme actif, ignore la découverte d'hôte\n  -n    pas de résolution DNS\n\nCible : 172.20.0.16\n\nLe mot de passe est le numéro du port ouvert que vous trouvez.`
+      },
+      info: {
+        en: `By default nmap first checks if a host is alive by sending ICMP echo requests, a TCP SYN to 443, a TCP ACK to 80, and an ICMP timestamp. If all of these are blocked, nmap assumes the host is down and skips the port scan entirely — you never see the open ports.\n\n-Pn skips that discovery phase completely. Nmap treats the host as up and goes straight to scanning.\n\n-n disables reverse DNS lookups. By default nmap resolves each IP to a hostname, which adds latency and can leave traces in DNS logs.`,
+        fr: `Par défaut, nmap vérifie d'abord si un hôte est actif en envoyant des requêtes d'écho ICMP, un TCP SYN sur le port 443, un TCP ACK sur le port 80 et un horodatage ICMP. Si tout cela est bloqué, nmap suppose que l'hôte est hors ligne et ignore complètement le scan de ports — vous ne voyez jamais les ports ouverts.\n\n-Pn ignore complètement cette phase de découverte. Nmap traite l'hôte comme actif et passe directement au scan.\n\n-n désactive les recherches DNS inversées. Par défaut, nmap résout chaque IP en un nom d'hôte, ce qui ajoute de la latence et peut laisser des traces dans les journaux DNS.`
+      }
+    },
+    {
+      n: 13,
+      concept: { en: '--reason', fr: '--reason' },
+      target: '172.20.0.14',
+      command: 'nmap --reason 172.20.0.14',
+      goal: {
+        en: `You have a target at 172.20.0.14. You know port 21 is open. But your report needs more than just open/closed — your commander wants to know WHY nmap thinks each port is in that state.\n\nThere is an nmap flag that adds a REASON column to the output. The password to level14 is the reason nmap gives for port 21 being open.`,
+        fr: `Vous avez une cible à l'adresse 172.20.0.14. Vous savez que le port 21 est ouvert. Mais votre rapport nécessite plus que de simples indications ouvert/fermé — votre commandant veut savoir POURQUOI nmap pense que chaque port est dans cet état.\n\nIl existe un drapeau nmap qui ajoute une colonne REASON à la sortie. Le mot de passe pour le niveau 14 est la raison donnée par nmap pour l'ouverture du port 21.`
+      },
+      hint: {
+        en: `One flag. It adds a REASON column to the nmap output.\n\n  nmap --reason 172.20.0.14\n\nThe password is what appears in the REASON column next to port 21.`,
+        fr: `Un drapeau. Il ajoute une colonne REASON à la sortie nmap.\n\n  nmap --reason 172.20.0.14\n\nLe mot de passe est ce qui apparaît dans la colonne REASON à côté du port 21.`
+      },
+      info: {
+        en: `By default nmap tells you a port is open, closed, or filtered. But it does not tell you how it reached that conclusion.\n\n--reason adds a REASON column to the output explaining the network response that determined each port state:\n  syn-ack      received a SYN-ACK reply — port is open\n  reset        received a RST packet — port is closed\n  no-response  no reply at all — port is filtered\n  conn-refused connection was refused at the OS level\n\nThis is useful for diagnosing firewall behaviour and understanding exactly what the target is doing with your probe packets.`,
+        fr: `Par défaut, nmap vous indique si un port est ouvert, fermé ou filtré. Mais il ne vous dit pas comment il est arrivé à cette conclusion.\n\n--reason ajoute une colonne REASON à la sortie expliquant la réponse réseau qui a déterminé l'état de chaque port :\n  syn-ack      réponse SYN-ACK reçue — le port est ouvert\n  reset        paquet RST reçu — le port est fermé\n  no-response  aucune réponse — le port est filtré\n  conn-refused la connexion a été refusée au niveau de l'OS`
+      }
+    },
+    {
+      n: 14,
+      concept: { en: 'Output formats', fr: 'Formats de sortie' },
+      target: '172.20.0.14',
+      command: 'nmap -sV -oA scan 172.20.0.14',
+      goal: {
+        en: `You have a target at 172.20.0.14. Your mission is not just to scan it — you need to save the results in all formats at once.\n\nnmap can export output in three formats simultaneously: normal, XML, and grepable. Run a version scan and save all three files with the base name "scan".\n\nOnce you have the files, look inside the XML. Find the product field for the open port. That is your password.`,
+        fr: `Vous avez une cible à l'adresse 172.20.0.14. Votre mission n'est pas seulement de la scanner — vous devez enregistrer les résultats dans tous les formats à la fois.\n\nnmap peut exporter la sortie dans trois formats simultanément : normal, XML et grepable. Exécutez un scan de version et enregistrez les trois fichiers avec le nom de base "scan".\n\nUne fois les fichiers obtenus, regardez à l'intérieur du XML. Trouvez le champ product pour le port ouvert. C'est votre mot de passe.`
+      },
+      hint: {
+        en: `Two flags together: -sV to detect versions, -oA to save all formats.\n\n  nmap -sV -oA scan 172.20.0.14\n\nThis creates scan.nmap, scan.xml, and scan.gnmap in your current directory. Then grep the XML file for the product field:\n\n  grep product scan.xml`,
+        fr: `Deux drapeaux ensemble : -sV pour détecter les versions, -oA pour enregistrer tous les formats.\n\n  nmap -sV -oA scan 172.20.0.14\n\nCela crée scan.nmap, scan.xml et scan.gnmap. Ensuite, utilisez grep sur le fichier XML pour le champ product :\n\n  grep product scan.xml`
+      },
+      info: {
+        en: `nmap can save scan results to files in three formats:\n  normal (.nmap)    same as what you see in the terminal\n  XML    (.xml)     machine-readable, great for scripting and grepping\n  grepable (.gnmap) one line per host, easy to parse with grep/awk\n\n-oA <basename> saves all three at once. XML output is especially useful — it contains structured fields like product, version, ostype, and cpe that are not always visible in normal terminal output.`,
+        fr: `nmap peut enregistrer les résultats des scans dans des fichiers en trois formats :\n  normal (.nmap)    identique à ce que vous voyez dans le terminal\n  XML    (.xml)     lisible par machine, idéal pour les scripts\n  grepable (.gnmap) une ligne par hôte, facile à analyser avec grep/awk\n\n-oA <basename> enregistre les trois à la fois. La sortie XML est particulièrement utile car elle contient des champs structurés comme product, version, ostype et cpe.`
+      }
+    },
+    {
+      n: 15,
+      concept: { en: 'NSE default scripts', fr: 'Scripts NSE par défaut' },
+      target: '172.20.0.17',
+      command: 'nmap -sC 172.20.0.17',
+      goal: {
+        en: `There is a host at 172.20.0.17. A plain scan shows port 8080 open. But there is more to this host than a port number.\n\nnmap has a flag that runs its default set of scripts against the target. These scripts probe services and extract useful information that a plain scan would never show.\n\nThe password to level16 is hidden in the script output.`,
+        fr: `Il y a un hôte à l'adresse 172.20.0.17. Un simple scan montre que le port 8080 est ouvert. Mais il y a plus sur cet hôte qu'un numéro de port.\n\nnmap possède un drapeau qui exécute son ensemble de scripts par défaut contre la cible. Ces scripts sondent les services et extraient des informations utiles qu'un simple scan ne montrerait jamais.\n\nLe mot de passe pour le niveau 16 est caché dans la sortie du script.`
+      },
+      hint: {
+        en: `One flag. It runs nmap default scripts against the target.\n\n  -sC   run default NSE scripts\n\nTarget: 172.20.0.17. Look carefully at the script output, not just the port table.`,
+        fr: `Un drapeau. Il exécute les scripts par défaut de nmap contre la cible.\n\n  -sC   exécute les scripts NSE par défaut\n\nCible : 172.20.0.17. Regardez attentivement la sortie du script.`
+      },
+      info: {
+        en: `nmap includes a scripting engine called NSE (Nmap Scripting Engine). It comes with hundreds of scripts that probe services for extra info.\n\n-sC runs the default script category — scripts considered safe and useful for general scanning. Depending on the service found, these scripts might reveal:\n  HTTP titles and authentication realms\n  SSH host keys and algorithms\n  FTP anonymous login status\n  SMB share names and OS info\n  SSL certificate details\n\nThe output appears below the port line, prefixed with a pipe symbol.`,
+        fr: `nmap comprend un moteur de script appelé NSE (Nmap Scripting Engine). Il est livré avec des centaines de scripts qui sondent les services.\n\n-sC exécute la catégorie de scripts par défaut. Selon le service trouvé, ces scripts peuvent révéler :\n  Titres HTTP et domaines d'authentification\n  Clés d'hôte et algorithmes SSH\n  Statut de connexion anonyme FTP\n  Noms de partage SMB et infos OS\n  Détails de certificat SSL`
+      }
+    },
+    {
+      n: 16,
+      concept: { en: 'Named scripts', fr: 'Scripts nommés' },
+      target: '172.20.0.18',
+      command: 'nmap --script ftp-anon -p 21 172.20.0.18',
+      goal: {
+        en: `There is an FTP server at 172.20.0.18. A plain scan tells you port 21 is open. Nothing more.\n\nnmap scripts can go further than a plain scan — they interact with services and extract useful information automatically.\n\nThere is a specific nmap script that checks whether an FTP server allows anonymous login. Run it against port 21. The password to level17 is the login method the script reports as allowed.`,
+        fr: `Il y a un serveur FTP à l'adresse 172.20.0.18. Un simple scan vous indique que le port 21 est ouvert. Rien de plus. Les scripts nmap peuvent aller plus loin qu'un simple scan — ils interagissent avec les services et extraient automatiquement des informations utiles.\n\nIl existe un script nmap spécifique qui vérifie si un serveur FTP autorise la connexion anonyme. Exécutez-le contre le port 21. Le mot de passe pour le niveau 17 est la méthode de connexion que le script indique comme autorisée.`
+      },
+      hint: {
+        en: `You need to run a specific NSE script against port 21.\n\n  --script ftp-anon   checks if anonymous FTP login is allowed\n  -p 21               target only port 21\n\nTarget: 172.20.0.18. The password is in the script output line.`,
+        fr: `Vous devez exécuter un script NSE spécifique contre le port 21.\n\n  --script ftp-anon   vérifie si la connexion FTP anonyme est autorisée\n  -p 21               cible uniquement le port 21\n\nCible : 172.20.0.18. Le mot de passe se trouve dans la ligne de sortie du script.`
+      },
+      info: {
+        en: `nmap includes hundreds of scripts in its Nmap Scripting Engine (NSE). While -sC runs the default set, you can also run specific scripts by name using --script <scriptname>.\n\nScripts are organised into categories: default, vuln, auth, discovery, brute. Running a named script:\n\n  nmap --script ftp-anon -p 21 <target>\n\nScript output appears below the port line prefixed with a pipe symbol. Always read it carefully — it often contains the most valuable findings.`,
+        fr: `nmap comprend des centaines de scripts dans NSE. Vous pouvez exécuter des scripts spécifiques par leur nom avec --script <nom_du_script>.\n\nLes scripts sont organisés en catégories : default, vuln, auth, discovery, brute. Exécution d'un script nommé :\n\n  nmap --script ftp-anon -p 21 <cible>`
+      }
+    },
+    {
+      n: 17,
+      concept: { en: 'http-enum', fr: 'http-enum' },
+      target: '172.20.0.19',
+      command: 'nmap --script http-enum -p 80 172.20.0.19',
+      goal: {
+        en: `There is a web server at 172.20.0.19. A plain scan tells you port 80 is open. Nothing more.\n\nWeb servers often hide directories they do not want you to find. Sometimes they even leave a map of exactly what they are hiding.\n\nnmap has a script that enumerates common HTTP paths and checks the server's own hints about what should stay private. Run it. Read the output carefully. The password is right there.`,
+        fr: `Il y a un serveur Web à l'adresse 172.20.0.19. Un simple scan vous indique que le port 80 est ouvert. Rien de plus. Les serveurs Web cachent souvent des répertoires qu'ils ne veulent pas que vous trouviez.\n\nParfois, ils laissent même une carte de ce qu'ils cachent exactement. nmap possède un script qui énumère les chemins HTTP courants et vérifie les propres indices du serveur. Exécutez-le. Lisez attentivement la sortie. Le mot de passe est juste là.`
+      },
+      hint: {
+        en: `One script. It enumerates directories and files on an HTTP server.\n\n  --script http-enum   probe common paths and read server hints\n  -p 80                target port 80\n\nTarget: 172.20.0.19. The password is the name of the hidden directory the script finds.`,
+        fr: `Un script. Il énumère les répertoires et les fichiers sur un serveur HTTP.\n\n  --script http-enum   sonde les chemins courants et lit les indices\n  -p 80                cible le port 80\n\nCible : 172.20.0.19. Le mot de passe est le nom du répertoire caché que le script trouve.`
+      },
+      info: {
+        en: `http-enum is an NSE script that probes an HTTP server for hidden content. It works two ways:\n\n1. It tries hundreds of common paths from a built-in wordlist — admin panels, config files, backup directories, login pages.\n\n2. It reads the server's robots.txt file. robots.txt is meant to tell search engine crawlers which paths NOT to index. In practice it is a public list of everything the server owner wants to hide.`,
+        fr: `http-enum est un script NSE qui sonde un serveur HTTP pour trouver du contenu caché. Il fonctionne de deux manières :\n\n1. Il essaie des centaines de chemins courants (admin, config, etc.).\n\n2. Il lit le fichier robots.txt du serveur qui contient souvent une liste de tout ce que le propriétaire veut cacher.`
+      }
+    },
+    {
+      n: 18,
+      concept: { en: 'Complete', fr: 'Terminé' },
+      win: true,
+      goal: {
+        en: `You made it.\n\nYou started with a single ping sweep and worked your way through port ranges, protocol tricks, timing controls, output formats, and scripting — all the building blocks of real network reconnaissance.\n\nThis is what nmap looks like in practice. The flags are not trivia. They are the difference between a scan that finds nothing and one that finds everything.\n\nCongratulations. You have completed NmapWire.\n\n— bitflip`,
+        fr: `Vous avez réussi.\n\nVous avez commencé par un simple balayage ping et vous avez progressé à travers les plages de ports, les astuces de protocole, les contrôles de timing, les formats de sortie et les scripts — tous les blocs de base d'une véritable reconnaissance réseau.\n\nC'est à cela que ressemble nmap en pratique. Les drapeaux ne sont pas des futilités. Ils font la différence entre un scan qui ne trouve rien et un scan qui trouve tout.\n\nFélicitations. Vous avez terminé NmapWire.\n\n— bitflip`
+      }
+    }
+  ];
 
 /* ── STATE ──────────────────────────────────────────────── */
-
 let currentPage = 'home';
-
 let levelsOpen  = false;
 
-
-
 function setLang(lang) {
-
   currentLang = lang;
-
   document.getElementById('lang-en').classList.toggle('active', lang === 'en');
-
   document.getElementById('lang-fr').classList.toggle('active', lang === 'fr');
-
   
-
   // update static sidebar labels
-
   document.getElementById('nav-home').textContent = i18n[lang].home;
-
   document.getElementById('label-wargames').textContent = i18n[lang].wargames;
-
   document.getElementById('nav-rules').textContent = i18n[lang].rules;
-
   document.getElementById('nav-info').textContent = i18n[lang].info;
-
   document.getElementById('label-nmapwire').textContent = 'NmapWire';
 
-
-
   buildSidebarLevels();
-
   renderPage(currentPage);
-
 }
-
-
 
 /* ── SIDEBAR LEVELS ─────────────────────────────────────── */
-
 function buildSidebarLevels() {
-
   const container = document.getElementById('nav-levels');
-
   const lang = currentLang;
-
   container.innerHTML = levels.map(l => `
-
     <div class="nav-level-item ${l.tbd ? 'tbd-nav' : ''}"
-
          id="nav-level-${l.n}"
-
          onclick="navigate('level-${l.n}')">
-
       <span class="nav-level-dot"></span>
-
       <span>${i18n[lang].level} ${l.n}${l.win ? ' → ' + i18n[lang].win : ''}</span>
-
     </div>
-
   `).join('');
 
-
-
   document.querySelectorAll('.tbd-nav').forEach(el => {
-
     el.style.opacity = '0.35';
-
     el.style.pointerEvents = 'none';
-
   });
-
 }
-
-
 
 function toggleLevels() {
-
   levelsOpen = !levelsOpen;
-
   document.getElementById('nav-levels').classList.toggle('open', levelsOpen);
-
   document.getElementById('nav-arrow').style.transform = levelsOpen ? 'rotate(90deg)' : '';
-
   document.getElementById('nav-nmapwire').classList.toggle('active', levelsOpen);
-
 }
-
-
 
 /* ── COPY COMMAND ────────────────────────────────────────── */
-
 function copyCmd(btn, text) {
-
   navigator.clipboard.writeText(text).then(() => {
-
     btn.textContent = currentLang === 'en' ? 'copied!' : 'copié !';
-
     btn.classList.add('copied');
-
     setTimeout(() => {
-
       btn.textContent = currentLang === 'en' ? 'copy' : 'copier';
-
       btn.classList.remove('copied');
-
     }, 1800);
-
   });
-
 }
-
-
 
 /* ── COLLAPSIBLE TOGGLE ─────────────────────────────────── */
-
 function toggleCollapsible(id) {
-
   const el = document.getElementById(id);
-
   if (!el) return;
-
   const body = el.querySelector('.collapsible-body');
-
   const toggleText = el.querySelector('.toggle-text');
-
   const isOpen = el.classList.contains('open');
 
-
-
   if (isOpen) {
-
     body.style.height = body.scrollHeight + 'px';
-
     requestAnimationFrame(() => {
-
       requestAnimationFrame(() => { body.style.height = '0'; });
-
     });
-
     el.classList.remove('open');
-
     if (toggleText) toggleText.textContent = i18n[currentLang].expand;
-
   } else {
-
     body.style.height = body.scrollHeight + 'px';
-
     el.classList.add('open');
-
     if (toggleText) toggleText.textContent = i18n[currentLang].collapse;
-
     body.addEventListener('transitionend', function onEnd() {
-
       body.style.height = 'auto';
-
       body.removeEventListener('transitionend', onEnd);
-
     });
-
   }
-
 }
-
-
 
 /* ── ROUTER ─────────────────────────────────────────────── */
-
 function navigate(page) {
-
   currentPage = page;
 
-
-
   document.querySelectorAll('.nav-item, .nav-level-item').forEach(el => {
-
     el.classList.remove('active');
-
   });
 
-
-
   if (page === 'home') {
-
     document.getElementById('nav-home').classList.add('active');
-
   } else if (page === 'nmapwire') {
-
     document.getElementById('nav-nmapwire').classList.add('active');
-
     if (!levelsOpen) toggleLevels();
-
   } else if (page.startsWith('level-')) {
-
     const n = parseInt(page.split('-')[1]);
-
     const el = document.getElementById(`nav-level-${n}`);
-
     if (el) el.classList.add('active');
-
     if (!levelsOpen) toggleLevels();
-
     document.getElementById('nav-nmapwire').classList.add('active');
-
   } else if (page === 'rules') {
-
     document.getElementById('nav-rules').classList.add('active');
-
   } else if (page === 'info') {
-
     document.getElementById('nav-info').classList.add('active');
-
   }
-
-
 
   renderPage(page);
-
 }
-
-
 
 /* ── RENDERERS ──────────────────────────────────────────── */
-
 function renderPage(page) {
-
   const content = document.getElementById('content');
-
   let html = '';
 
-
-
   if (page === 'home')              html = renderHome();
-
   else if (page === 'nmapwire')     html = renderNmapwire();
-
   else if (page === 'rules')        html = renderRules();
-
   else if (page === 'info')         html = renderInfo();
-
   else if (page.startsWith('level-')) {
-
     const n = parseInt(page.split('-')[1]);
-
     html = renderLevel(n);
-
   }
 
-
-
   content.innerHTML = `<div class="page">${html}</div>`;
-
   window.scrollTo({ top: 0, behavior: 'instant' });
-
 }
 
-
-
 /* ── HOME ───────────────────────────────────────────────── */
-
 function renderHome() {
-
   const lang = currentLang;
-
   const t = i18n[lang];
-
   return `
-
     <div class="page-title">${t.homeTitle}</div>
-
     <div class="page-subtitle">${t.homeSubtitle}</div>
-
-
 
     <p>${t.homeDesc}</p>
 
-
-
     <p>${t.homePick}</p>
 
-
-
     <div class="wargame-card" onclick="navigate('nmapwire')">
-
       <div style="display:flex; align-items:center; gap:12px; margin-bottom:10px;">
-
         <div class="wargame-card-title">NmapWire</div>
-
         <span class="badge">Active</span>
-
       </div>
-
       <div class="wargame-card-desc">
-
         ${t.nmapwireDesc}
-
       </div>
-
       <div class="wargame-card-meta">
-
         ${t.nmapwireMeta}
-
       </div>
-
       <br>
-
       <span class="btn">${t.play} →</span>
-
     </div>
-
-
 
     <div style="margin-top: 64px; border-top: 1px solid var(--c-border); padding-top: 24px; color: var(--c-muted); font-size: 11px; text-align: center;">
-
       ${t.madeBy}
-
     </div>
-
   `;
-
 }
 
-
-
 /* ── NMAPWIRE OVERVIEW ──────────────────────────────────── */
-
 function renderNmapwire() {
-
   const lang = currentLang;
-
   const t = i18n[lang];
-
   const tableRows = levels.map(l => `
-
     <tr class="${l.tbd ? 'tbd-row' : ''}">
-
       <td class="level-link" onclick="navigate('level-${l.n}')">
-
         ${t.level} ${l.n}${l.win ? ' → ' + t.win : ''}
-
       </td>
-
       <td>${l.concept[lang]}</td>
-
       <td>${l.tbd ? '' : l.target || 'none'}</td>
-
     </tr>
-
   `).join('');
 
-
-
   return `
-
     <div class="page-title">NmapWire</div>
-
     <div class="page-subtitle">An Nmap wargame</div>
 
-
-
     <h2>${t.about}</h2>
-
     <p>${t.nmapwireAbout}</p>
-
-
 
     <p>${t.nmapwireExtra}</p>
 
-
-
     <h2>${t.howToConnect}</h2>
 
-
-
     <div class="info-box">
-
       <div class="info-box-title">${t.connectionInfo}</div>
-
       <div class="info-row">
-
         <span class="info-label">${t.host}</span>
-
         <span class="info-value accent">${HOST}</span>
-
       </div>
-
       <div class="info-row">
-
         <span class="info-label">${t.port}</span>
-
         <span class="info-value">${PORT}</span>
-
       </div>
-
       <div class="info-row">
-
         <span class="info-label">${t.user}</span>
-
         <span class="info-value">level0</span>
-
       </div>
-
       <div class="info-row">
-
         <span class="info-label">${t.password}</span>
-
         <span class="info-value">level0</span>
-
       </div>
-
       <div class="info-row">
-
         <span class="info-label">${t.firstStep}</span>
-
         <span class="info-value">cat ~/note.txt</span>
-
       </div>
-
     </div>
-
-
 
     <div class="cmd-block"><span class="prompt">$</span> ssh level0@${HOST} -p ${PORT}<button class="cmd-copy-btn" onclick="copyCmd(this,'ssh level0@${HOST} -p ${PORT}')">${lang === 'en' ? 'copy' : 'copier'}</button></div>
 
-
-
     <h2>${t.levelTable}</h2>
-
     <table class="level-table">
-
       <thead>
-
         <tr>
-
           <th>${t.level}</th>
-
           <th>${t.concept}</th>
-
           <th>${t.target}</th>
-
         </tr>
-
       </thead>
-
       <tbody>${tableRows}</tbody>
-
     </table>
-
   `;
-
 }
-
-
 
 /* ── COLLAPSIBLE BUILDER ─────────────────────────────────── */
-
 function buildCollapsible({ id, label, type, bodyHtml }) {
-
   const extraClass = type === 'hint' ? 'hint-collapsible' : 'info-collapsible';
-
   const toggleText = i18n[currentLang].expand;
-
   return `
-
     <div class="collapsible ${extraClass}" id="${id}">
-
       <div class="collapsible-header" onclick="toggleCollapsible('${id}')">
-
         <span class="collapsible-label">${label}</span>
-
         <span class="collapsible-toggle">
-
           <span class="toggle-text">${toggleText}</span>
-
           <span class="chevron">›</span>
-
         </span>
-
       </div>
-
       <div class="collapsible-body">
-
         <div class="collapsible-inner">
-
           ${bodyHtml}
-
         </div>
-
       </div>
-
     </div>
-
   `;
-
 }
 
-
-
 /* ── LEVEL PAGE ─────────────────────────────────────────── */
-
 function renderLevel(n) {
-
   const lang = currentLang;
-
   const t = i18n[lang];
-
   const level = levels.find(l => l.n === n);
-
   if (!level) return '<p>Level not found.</p>';
 
-
-
   const prev = levels.find(l => l.n === n - 1);
-
   const next = levels.find(l => l.n === n + 1);
 
-
-
-  if (level.tbd) {
-
+  if (level.win) {
     return `
-
-      <div class="page-title">${t.level} ${n}${level.win ? ' → ' + t.win : ` → ${t.level} ${n+1}`}</div>
-
+      <div class="page-title">${t.level} ${n} → ${t.win}</div>
       <div class="page-subtitle">${level.concept[lang]}</div>
 
-      <div style="margin-top:40px; color: var(--c-muted); font-size:12.5px;">
-
-        ${t.underConstruction}
-
-      </div>
+      <h2>${t.goal}</h2>
+      ${level.goal[lang].split('\n\n').map(p => `<p>${p.trim()}</p>`).join('')}
 
       <div class="level-nav">
-
-        <span class="level-nav-btn ${!prev ? 'disabled' : ''}"
-
-              onclick="navigate('level-${n-1}')">
-
+        <span class="level-nav-btn" onclick="navigate('level-${n-1}')">
           ← ${t.level} ${n-1}
-
         </span>
-
         <span style="font-size:11px; color:var(--c-muted)">${t.level} ${n}</span>
-
-        <span class="level-nav-btn disabled">${t.level} ${n+1} →</span>
-
+        <span class="level-nav-btn disabled">${t.next} →</span>
       </div>
-
     `;
-
   }
 
-
-
   /* ── format hint body ── */
-
   const hintBodyHtml = level.hint && level.hint[lang]
-
     ? level.hint[lang].split('\n').map(line => {
-
         line = line.trim();
-
         if (!line) return '';
-
         if (line.startsWith('nmap') || line.startsWith('sudo nmap') || line.startsWith('cat')) {
-
           const escaped = line.replace(/'/g, "\\'");
-
           const copyLabel = lang === 'en' ? 'copy' : 'copier';
-
           return `<div class="cmd-block"><span class="prompt">$</span> ${line}<button class="cmd-copy-btn" onclick="copyCmd(this,'${escaped}')">${copyLabel}</button></div>`;
-
         }
-
         return `<p>${line}</p>`;
-
       }).join('')
-
     : '';
-
-
 
   /* ── format info body ── */
-
   const infoBodyHtml = level.info && level.info[lang]
-
     ? level.info[lang].split('\n').map(line => {
-
         line = line.trim();
-
         if (!line) return '';
-
         if (line.startsWith('T') && lang === 'en') {
-
           return `<p style="padding-left:1em; color:var(--c-heading); font-size:12px;">${line}</p>`;
-
         }
-
         return `<p>${line}</p>`;
-
       }).join('')
-
     : '';
-
-
 
   const passwordRow = n === 0
-
     ? `<div class="info-row">
-
         <span class="info-label">${t.password}</span>
-
         <span class="info-value">level0</span>
-
        </div>`
-
     : '';
-
-
 
   const targetRow = level.target
-
     ? `<div class="info-row">
-
         <span class="info-label">${t.target} IP</span>
-
         <span class="info-value">${level.target}</span>
-
        </div>`
-
     : '';
-
-
 
   const hintSection = hintBodyHtml
-
     ? buildCollapsible({
-
         id: `collapsible-hint-${n}`,
-
         label: t.hint,
-
         type: 'hint',
-
         bodyHtml: hintBodyHtml
-
       })
-
     : '';
-
-
 
   const infoSection = infoBodyHtml
-
     ? buildCollapsible({
-
         id: `collapsible-info-${n}`,
-
         label: t.eduBackground,
-
         type: 'info',
-
         bodyHtml: infoBodyHtml
-
       })
-
     : '';
 
-
+  const nextLabel = next && next.win ? t.win : `${t.level} ${n+1}`;
 
   return `
-
-    <div class="page-title">${t.level} ${n} → ${t.level} ${n+1}</div>
-
+    <div class="page-title">${t.level} ${n} → ${nextLabel}</div>
     <div class="page-subtitle">${level.concept[lang]}</div>
 
-
-
     <h2>${t.goal}</h2>
-
     ${level.goal[lang].split('\n\n').map(p => `<p>${p.trim()}</p>`).join('')}
 
-
-
     <h2>${t.connectionInfo}</h2>
-
     <div class="info-box">
-
       <div class="info-box-title">${t.sshInto}</div>
-
       <div class="info-row">
-
         <span class="info-label">${t.host}</span>
-
         <span class="info-value accent">${HOST}</span>
-
       </div>
-
       <div class="info-row">
-
         <span class="info-label">${t.port}</span>
-
         <span class="info-value">${PORT}</span>
-
       </div>
-
       <div class="info-row">
-
         <span class="info-label">${t.user}</span>
-
         <span class="info-value">level${n}</span>
-
       </div>
-
       ${passwordRow}
-
       ${targetRow}
-
     </div>
-
-
 
     <div class="cmd-block"><span class="prompt">$</span> ssh level${n}@${HOST} -p ${PORT}<button class="cmd-copy-btn" onclick="copyCmd(this,'ssh level${n}@${HOST} -p ${PORT}')">${lang === 'en' ? 'copy' : 'copier'}</button></div>
 
-
-
     ${hintSection}
-
     ${infoSection}
 
-
-
     <div class="level-nav">
-
       <span class="level-nav-btn ${n === 0 ? 'disabled' : ''}"
-
             onclick="navigate('level-${n-1}')">
-
         ← ${t.level} ${n-1}
-
       </span>
-
       <span style="font-size:11px; color:var(--c-muted)">${t.level} ${n}</span>
-
       <span class="level-nav-btn ${!next ? 'disabled' : ''}"
-
             onclick="navigate('level-${n+1}')">
-
-        ${t.level} ${n+1} →
-
+        ${nextLabel} →
       </span>
-
     </div>
-
   `;
-
 }
-
-
 
 /* ── RULES ──────────────────────────────────────────────── */
-
 function renderRules() {
-
   const lang = currentLang;
-
   const t = i18n[lang];
-
   const rules = lang === 'en' ? [
-
     'Do not brute-force passwords. Each level has exactly one intended solution.',
-
     'Do not attack or disrupt the server infrastructure or network outside of your assigned level.',
-
     'Do not share passwords publicly. Let others find them through the game.',
-
     'Do not attempt to access other students\' accounts or home directories.',
-
     'The password is always derivable from the nmap output alone. If you need to do something else, re-read the hint.',
-
     'sudo is available for nmap only. sudo bash, sudo cat, and similar commands are blocked by design.',
-
     'If you believe you have found a bug or an unintended solution, report it to your instructor.',
-
-    'This platform is for educational use only.'
-
+    'This platform is for educational use only. Techniques practiced here must not be applied outside this environment without authorisation.'
   ] : [
-
     'Ne forcez pas les mots de passe. Chaque niveau a exactement une solution prévue.',
-
     'N\'attaquez pas et ne perturbez pas l\'infrastructure du serveur ou le réseau en dehors de votre niveau assigné.',
-
     'Ne partagez pas les mots de passe publiquement. Laissez les autres les trouver par le jeu.',
-
     'N\'essayez pas d\'accéder aux comptes ou aux répertoires personnels d\'autres étudiants.',
-
     'Le mot de passe peut toujours être dérivé uniquement de la sortie nmap. Si vous devez faire autre chose, relisez l\'indice.',
-
     'sudo est disponible uniquement pour nmap. sudo bash, sudo cat et les commandes similaires sont bloqués par conception.',
-
     'Si vous pensez avoir trouvé un bug ou une solution non intentionnelle, signalez-le à votre instructeur.',
-
     'Cette plateforme est réservée à un usage pédagogique. Les techniques pratiquées ici ne doivent pas être appliquées en dehors de cet environnement sans autorisation.'
-
   ];
 
-
-
   return `
-
     <div class="page-title">${t.rules}</div>
-
     <div class="page-subtitle">${lang === 'en' ? 'Please read before playing' : 'Veuillez lire avant de jouer'}</div>
 
-
-
     <p>${lang === 'en' 
-
       ? 'NmapWire is an educational platform. These rules exist to ensure a fair and productive experience for everyone.'
-
       : 'NmapWire est une plateforme pédagogique. Ces règles existent pour garantir une expérience équitable et productive pour tous.'}</p>
 
-
-
     <h2>${t.gameRules}</h2>
-
     <ul class="rules-list">
-
       ${rules.map(r => `<li>${r}</li>`).join('')}
-
     </ul>
-
   `;
-
 }
-
-
 
 /* ── INFO ───────────────────────────────────────────────── */
-
 function renderInfo() {
-
   const lang = currentLang;
-
   const t = i18n[lang];
-
   return `
-
     <div class="page-title">${t.info}</div>
-
     <div class="page-subtitle">${lang === 'en' ? 'About bitflip and NmapWire' : 'À propos de bitflip et NmapWire'}</div>
 
-
-
     <h2>${t.platform}</h2>
-
     <div class="info-box">
-
       <div class="info-row">
-
         <span class="info-label">${t.platform}</span>
-
         <span class="info-value">bitflip</span>
-
       </div>
-
       <div class="info-row">
-
         <span class="info-label">${t.wargame}</span>
-
         <span class="info-value">NmapWire</span>
-
       </div>
-
       <div class="info-row">
-
         <span class="info-label">${t.host}</span>
-
         <span class="info-value accent">${HOST}</span>
-
       </div>
-
       <div class="info-row">
-
         <span class="info-label">${t.server}</span>
-
         <span class="info-value">Arch Linux + Docker</span>
-
       </div>
-
     </div>
-
-
 
     <h2>${t.socials}</h2>
-
     <div class="info-box">
-
       <div class="info-row">
-
         <span class="info-label">LinkedIn</span>
-
         <span class="info-value"><a href="https://www.linkedin.com/in/mohammed-reda-jdaini-28b848398/" target="_blank" style="color:var(--c-accent)">mohammed-reda-jdaini</a></span>
-
       </div>
-
       <div class="info-row">
-
         <span class="info-label">GitHub</span>
-
         <span class="info-value"><a href="https://github.com/jdainireda03-pixel" target="_blank" style="color:var(--c-accent)">jdainireda03-pixel</a></span>
-
       </div>
-
     </div>
-
-
 
     <h2>${t.about}</h2>
-
     <p>${lang === 'en' 
-
       ? 'bitflip is a CTF platform built for the Nmap lab. NmapWire is modelled after UnderTheWire, an SSH-based wargame where each level teaches exactly one concept through practice.'
-
       : 'bitflip est une plateforme CTF conçue pour le labo Nmap. NmapWire est calqué sur UnderTheWire, un wargame basé sur SSH où chaque niveau enseigne exactement un concept par la pratique.'}</p>
 
-
-
     <p>${lang === 'en'
-
       ? 'Students connect via SSH and use nmap to scan Docker containers on an isolated internal network. Passwords are embedded in the scan output.'
-
       : 'Les étudiants se connectent via SSH et utilisent nmap pour scanner des conteneurs Docker sur un réseau interne isolé. Les mots de passe sont intégrés dans la sortie du scan.'}</p>
 
-
-
     <div style="margin-top: 48px; border-top: 1px solid var(--c-border); padding-top: 24px; color: var(--c-muted); font-size: 11px;">
-
       ${t.madeBy}
-
     </div>
-
   `;
-
 }
 
-
-
 /* ── INIT ───────────────────────────────────────────────── */
-
 buildSidebarLevels();
-
 setLang('en');
-
 navigate('home');
 
-
-
 </script>
-
 </body>
-
-</html>
-
-
-
-</script>
-
-</body>
-
 </html>
