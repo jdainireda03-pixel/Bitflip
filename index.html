@@ -783,7 +783,7 @@ const i18n = {
     homeDesc: 'The wargames hosted on bitflip are designed to help you learn and practice network reconnaissance in the form of hands-on, level-based challenges. Each game is played entirely over SSH with no setup required on your end.',
     homePick: 'Pick a game below to get started.',
     nmapwireDesc: 'An UnderTheWire-style SSH wargame built around the Nmap network scanner. Each level introduces exactly one new nmap flag or concept. Scan Docker containers on an internal network, extract a password from the scan output, and advance to the next level.',
-    nmapwireMeta: '21 levels · Nmap / Network Recon · Beginner → Intermediate',
+    nmapwireMeta: '22 levels · Nmap / Network Recon · Beginner → Intermediate',
     nmapwireAbout: 'NmapWire is organised in levels. You start at Level 0 and work your way to the WIN. Each level requires you to SSH into the server, scan a target on the internal network using nmap, and extract a password hidden in the scan output to advance to the next level.',
     nmapwireExtra: 'Each level page tells you exactly what to scan and gives you a hint if you are stuck. The educational background section explains the concept being practiced.'
   },
@@ -1161,25 +1161,16 @@ const levels = [
     },
     {
       n: 18,
-      concept: { en: 'Complete', fr: 'Terminé' },
-      win: true,
-      goal: {
-        en: `You made it.\n\nYou started with a single ping sweep and worked your way through port ranges, protocol tricks, timing controls, output formats, and scripting — all the building blocks of real network reconnaissance.\n\nThis is what nmap looks like in practice. The flags are not trivia. They are the difference between a scan that finds nothing and one that finds everything.\n\nCongratulations. You have completed the main track.\n\nExam challenges await beyond. Continue testing your skills.\n\n— bitflip`,
-        fr: `Vous avez réussi.\n\nVous avez commencé par un simple balayage ping et vous avez progressé à travers les plages de ports, les astuces de protocole, les contrôles de timing, les formats de sortie et les scripts — tous les blocs de base d'une véritable reconnaissance réseau.\n\nC'est à cela que ressemble nmap en pratique. Les drapeaux ne sont pas des futilités. Ils font la différence entre un scan qui ne trouve rien et un scan qui trouve tout.\n\nFélicitations. Vous avez terminé le parcours principal.\n\nDes défis d'examen vous attendent au-delà. Continuez à tester vos compétences.\n\n— bitflip`
-      }
-    },
-    {
-      n: 19,
       concept: { en: 'Paper Trail', fr: 'Paper Trail' },
       target: '172.20.0.20',
       command: 'nmap --script http-headers -p 8080 172.20.0.20',
       goal: {
-        en: `A server at 172.20.0.20 is leaking data fragments across two different ports. Each port holds one piece of the puzzle.\n\nScan both ports with different techniques and combine what you find into the password for the next level.\n\nKey techniques: host discovery, full port scan, version detection, HTTP header inspection, XML export.`,
-        fr: `Un serveur à l'adresse 172.20.0.20 fuit des fragments de données sur deux ports différents. Chaque port contient une pièce du puzzle.\n\nScannez les deux ports avec des techniques différentes et combinez ce que vous trouvez pour obtenir le mot de passe du niveau suivant.\n\nTechniques clés : découverte d'hôte, scan complet de ports, détection de version, inspection des en-têtes HTTP, export XML.`
+        en: `You connected here with the password discovered at level 17. Now the real work begins.\n\nA server at 172.20.0.20 is leaking data fragments across two different ports. Each port holds one piece of the puzzle.\n\nScan both ports with different techniques and combine what you find into the password for the next level.\n\nKey techniques: host discovery, full port scan, version detection, HTTP header inspection, XML export.`,
+        fr: `Vous vous êtes connecté ici avec le mot de passe découvert au niveau 17. Maintenant, le vrai travail commence.\n\nUn serveur à l'adresse 172.20.0.20 fuit des fragments de données sur deux ports différents. Chaque port contient une pièce du puzzle.\n\nScannez les deux ports avec des techniques différentes et combinez ce que vous trouvez pour obtenir le mot de passe du niveau suivant.\n\nTechniques clés : découverte d'hôte, scan complet de ports, détection de version, inspection des en-têtes HTTP, export XML.`
       },
       hint: {
-        en: `Discover the host and find all open ports.\nCheck the service version on port 80 — the version string is the first half.\nInspect HTTP headers on port 8080 — a custom header holds the second half.\nCombine the two halves.`,
-        fr: `Découvrez l'hôte et trouvez tous les ports ouverts.\nVérifiez la version du service sur le port 80 — la chaîne de version est la première moitié.\nInspectez les en-têtes HTTP sur le port 8080 — un en-tête personnalisé contient la seconde moitié.\nCombinez les deux moitiés.`
+        en: `Discover the host and find all open ports.\nCheck the service version on port 80 — the version string is the first half.\nInspect HTTP headers on port 8080 — a custom header holds the second half.\nCombine the two halves.\n\nThe password you find here is for level 19.`,
+        fr: `Découvrez l'hôte et trouvez tous les ports ouverts.\nVérifiez la version du service sur le port 80 — la chaîne de version est la première moitié.\nInspectez les en-têtes HTTP sur le port 8080 — un en-tête personnalisé contient la seconde moitié.\nCombinez les deux moitiés.\n\nLe mot de passe que vous trouverez ici est pour le niveau 19.`
       },
       info: {
         en: `Multi-command chains are the reality of network reconnaissance. No single flag reveals everything — you combine discovery, enumeration, and inspection techniques to build a complete picture.\n\nThis level tests your ability to:\n1. Discover live hosts (-sn)\n2. Find all listening ports (-p-)\n3. Identify service versions (-sV)\n4. Extract HTTP metadata (--script http-headers)\n5. Export results for analysis (-oX)\n\nThe password is assembled from information collected across separate scans.`,
@@ -1187,7 +1178,7 @@ const levels = [
       }
     },
     {
-      n: 20,
+      n: 19,
       concept: { en: 'NSE Pathfinder', fr: 'NSE Pathfinder' },
       target: '172.20.0.21',
       command: 'nmap --script discovery -p 80 172.20.0.21',
@@ -1205,13 +1196,13 @@ const levels = [
       }
     },
     {
-      n: 21,
+      n: 20,
       concept: { en: 'Network Sweep', fr: 'Network Sweep' },
       target: '172.20.0.22-23',
       command: 'nmap --script http-headers -iL targets.txt -p 80',
       goal: {
-        en: `Multiple hosts on the same subnet are coordinating to hide a secret. No single machine holds the full answer.\n\nCreate a target list file and scan them together to collect every piece of the password. The password is split across the HTTP response headers of two different hosts.`,
-        fr: `Plusieurs hôtes sur le même sous-réseau coordonnent leurs efforts pour cacher un secret. Aucune machine seule ne détient la réponse complète.\n\nCréez un fichier de liste de cibles et scannez-les ensemble pour collecter chaque pièce du mot de passe. Le mot de passe est réparti entre les en-têtes de réponse HTTP de deux hôtes différents.`
+        en: `Multiple hosts on the same subnet are coordinating to hide a secret. No single machine holds the full answer.\n\nCreate a target list file and scan them together to collect every piece of the password. The password you find here unlocks the final level.`,
+        fr: `Plusieurs hôtes sur le même sous-réseau coordonnent leurs efforts pour cacher un secret. Aucune machine seule ne détient la réponse complète.\n\nCréez un fichier de liste de cibles et scannez-les ensemble pour collecter chaque pièce du mot de passe. Le mot de passe que vous trouverez ici déverrouille le niveau final.`
       },
       hint: {
         en: `Discover the hosts first with -sn.\nCreate a file listing both target IPs.\nUse -iL to scan from that file.\nCheck HTTP headers on both hosts — each has half the password.`,
@@ -1220,6 +1211,15 @@ const levels = [
       info: {
         en: `The -iL flag tells nmap to read targets from a file instead of the command line. This is essential for scanning large numbers of hosts, automating scans, or sharing target lists.\n\nCombined with -sn for host discovery, -iL lets you build a workflow: discover hosts, save the interesting ones to a file, run deeper scans against the file, and correlate results across multiple machines.`,
         fr: `Le drapeau -iL indique à nmap de lire les cibles depuis un fichier au lieu de la ligne de commande. C'est essentiel pour scanner un grand nombre d'hôtes, automatiser les scans ou partager des listes de cibles.\n\nCombiné avec -sn pour la découverte d'hôtes, -iL vous permet de construire un workflow : découvrez les hôtes, sauvegardez les plus intéressants dans un fichier, lancez des scans plus approfondis contre le fichier et corrélez les résultats entre plusieurs machines.`
+      }
+    },
+    {
+      n: 21,
+      concept: { en: 'Complete', fr: 'Terminé' },
+      win: true,
+      goal: {
+        en: `You made it.\n\nYou started with a simple file read at level 0 and worked your way through port ranges, protocol techniques, timing controls, output formats, scripting, and multi-host reconnaissance — every essential building block of real network scanning.\n\nCongratulations. You have completed NmapWire.\n\n— bitflip`,
+        fr: `Vous avez réussi.\n\nVous avez commencé par une simple lecture de fichier au niveau 0 et vous avez progressé à travers les plages de ports, les techniques de protocole, les contrôles de timing, les formats de sortie, les scripts et la reconnaissance multi-hôtes — tous les blocs essentiels du scan réseau réel.\n\nFélicitations. Vous avez terminé NmapWire.\n\n— bitflip`
       }
     }
   ];
