@@ -1668,10 +1668,6 @@ function renderNmapwire() {
         <span class="info-value">level0</span>
       </div>
       <div class="info-row">
-        <span class="info-label">${t.password}</span>
-        <span class="info-value">level0</span>
-      </div>
-      <div class="info-row">
         <span class="info-label">${t.firstStep}</span>
         <span class="info-value">cat ~/note.txt</span>
       </div>
@@ -1731,10 +1727,6 @@ function renderTcpdumpwire() {
       <div class="info-row">
         <span class="info-label">${t.user}</span>
         <span class="info-value">tdump_0</span>
-      </div>
-      <div class="info-row">
-        <span class="info-label">${t.password}</span>
-        <span class="info-value">start_sniffing</span>
       </div>
       <div class="info-row">
         <span class="info-label">${t.firstStep}</span>
@@ -1839,15 +1831,6 @@ function renderLevel(n) {
       }).join('')
     : '';
 
-  const level0Pwd = currentGame === 'tcpdumpwire' ? 'start_sniffing' : 'level0';
-  const userPrefix = currentGame === 'tcpdumpwire' ? 'tdump_' : 'level';
-  const passwordRow = n === 0
-    ? `<div class="info-row">
-        <span class="info-label">${t.password}</span>
-        <span class="info-value">${level0Pwd}</span>
-       </div>`
-    : '';
-
   const targetRow = level.target
     ? `<div class="info-row">
         <span class="info-label">${t.target} IP</span>
@@ -1897,7 +1880,6 @@ function renderLevel(n) {
         <span class="info-label">${t.user}</span>
         <span class="info-value">${userPrefix}${n}</span>
       </div>
-      ${passwordRow}
       ${targetRow}
     </div>
 
