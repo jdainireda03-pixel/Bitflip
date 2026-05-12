@@ -1162,20 +1162,20 @@ const levels = [
     },
     {
       n: 17,
-      concept: { en: 'http-enum', fr: 'http-enum' },
+      concept: { en: 'http-robots.txt', fr: 'http-robots.txt' },
       target: '172.20.0.19',
-      command: 'nmap --script http-enum -p 80 172.20.0.19',
+      command: 'nmap --script http-robots.txt -p 80 172.20.0.19',
       goal: {
-        en: `There is a web server at 172.20.0.19. A plain scan tells you port 80 is open. Nothing more.\n\nWeb servers often hide directories they do not want you to find. Sometimes they even leave a map of exactly what they are hiding.\n\nnmap has a script that enumerates common HTTP paths and checks the server's own hints about what should stay private. Run it. Read the output carefully. The password is right there.`,
-        fr: `Il y a un serveur Web à l'adresse 172.20.0.19. Un simple scan vous indique que le port 80 est ouvert. Rien de plus. Les serveurs Web cachent souvent des répertoires qu'ils ne veulent pas que vous trouviez.\n\nParfois, ils laissent même une carte de ce qu'ils cachent exactement. nmap possède un script qui énumère les chemins HTTP courants et vérifie les propres indices du serveur. Exécutez-le. Lisez attentivement la sortie. Le mot de passe est juste là.`
+        en: `There is a web server at 172.20.0.19. Port 80 is open.\n\nWeb servers sometimes publish a file telling search engines what NOT to index. That file often contains a list of exactly what the owner wants to hide.\n\nRun the http-robots.txt script to extract the hidden directory name. The directory name is the password.`,
+        fr: `Il y a un serveur Web à l'adresse 172.20.0.19. Le port 80 est ouvert.\n\nLes serveurs web publient parfois un fichier indiquant aux moteurs de recherche ce qu'il NE faut PAS indexer. Ce fichier contient souvent une liste de tout ce que le propriétaire veut cacher.\n\nExécutez le script http-robots.txt pour extraire le nom du répertoire caché. Le nom du répertoire est le mot de passe.`
       },
       hint: {
-        en: `One script. It enumerates directories and files on an HTTP server.\n\n  --script http-enum   probe common paths and read server hints\n  -p 80                target port 80\n\nTarget: 172.20.0.19. The password is the name of the hidden directory the script finds.`,
-        fr: `Un script. Il énumère les répertoires et les fichiers sur un serveur HTTP.\n\n  --script http-enum   sonde les chemins courants et lit les indices\n  -p 80                cible le port 80\n\nCible : 172.20.0.19. Le mot de passe est le nom du répertoire caché que le script trouve.`
+        en: `nmap --script http-robots.txt -p 80 172.20.0.19\n\nThe password is the disallowed directory name.`,
+        fr: `nmap --script http-robots.txt -p 80 172.20.0.19\n\nLe mot de passe est le nom du répertoire interdit.`
       },
       info: {
-        en: `http-enum is an NSE script that probes an HTTP server for hidden content. It works two ways:\n\n1. It tries hundreds of common paths from a built-in wordlist — admin panels, config files, backup directories, login pages.\n\n2. It reads the server's robots.txt file. robots.txt is meant to tell search engine crawlers which paths NOT to index. In practice it is a public list of everything the server owner wants to hide.`,
-        fr: `http-enum est un script NSE qui sonde un serveur HTTP pour trouver du contenu caché. Il fonctionne de deux manières :\n\n1. Il essaie des centaines de chemins courants (admin, config, etc.).\n\n2. Il lit le fichier robots.txt du serveur qui contient souvent une liste de tout ce que le propriétaire veut cacher.`
+        en: `robots.txt is a standard file that web servers use to tell search engine crawlers which parts of the site should not be indexed. In practice, it often reveals hidden or private directories that the owner mistakenly believes are secret.\n\nThe http-robots.txt NSE script fetches this file and reports every disallowed path. It's a quick way to map the "hidden" surface of a web server.`,
+        fr: `robots.txt est un fichier standard que les serveurs web utilisent pour indiquer aux robots des moteurs de recherche quelles parties du site ne doivent pas être indexées. En pratique, il révèle souvent des répertoires cachés ou privés.`
       }
     },
     {
