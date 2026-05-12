@@ -1839,6 +1839,7 @@ function renderLevel(n) {
       }).join('')
     : '';
 
+  const userPrefix = currentGame === 'tcpdumpwire' ? 'tdump_' : 'level';
   const targetRow = level.target
     ? `<div class="info-row">
         <span class="info-label">${t.target} IP</span>
