@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>bitflip · NmapWire</title>
+<title>bitflip · wargames</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Oxanium:wght@600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -717,6 +717,15 @@ code {
         <!-- levels injected by JS -->
       </div>
 
+      <div class="nav-item" id="nav-tcpdumpwire" onclick="navigate('tcpdumpwire')">
+        <span id="label-tcpdumpwire">TcpdumpWire</span>
+        <span class="nav-arrow" id="nav-tcpdump-arrow" onclick="event.stopPropagation(); toggleTcpdumpLevels()">›</span>
+      </div>
+
+      <div class="nav-levels" id="nav-tcpdump-levels">
+        <!-- tcpdump levels injected by JS -->
+      </div>
+
       <div class="nav-divider"></div>
 
       <div class="nav-item" onclick="navigate('rules')" id="nav-rules">Rules</div>
@@ -785,7 +794,12 @@ const i18n = {
     nmapwireDesc: 'An UnderTheWire-style SSH wargame built around the Nmap network scanner. Each level introduces exactly one new nmap flag or concept. Scan Docker containers on an internal network, extract a password from the scan output, and advance to the next level.',
     nmapwireMeta: '22 levels · Nmap / Network Recon · Beginner → Intermediate',
     nmapwireAbout: 'NmapWire is organised in levels. You start at Level 0 and work your way to the WIN. Each level requires you to SSH into the server, scan a target on the internal network using nmap, and extract a password hidden in the scan output to advance to the next level.',
-    nmapwireExtra: 'Each level page tells you exactly what to scan and gives you a hint if you are stuck. The educational background section explains the concept being practiced.'
+    nmapwireExtra: 'Each level page tells you exactly what to scan and gives you a hint if you are stuck. The educational background section explains the concept being practiced.',
+    tcpdumpwire: 'TcpdumpWire',
+    tcpdumpwireDesc: 'An SSH wargame built around tcpdump. Each level introduces one tcpdump flag, filter, or BPF expression. Capture traffic from Docker containers, extract passwords from packet data, and advance through progressively harder network analysis challenges.',
+    tcpdumpwireMeta: '22 levels · Tcpdump / Packet Analysis · Beginner → Advanced',
+    tcpdumpwireAbout: 'TcpdumpWire follows the same format as NmapWire. You start at level 0 and work your way up. Each level requires you to SSH into the server, run tcpdump to capture specific traffic from background containers, and find the password hidden in the captured packets.',
+    tcpdumpwireExtra: 'Each level page tells you what traffic to capture and gives a hint. Some levels require waiting for periodic traffic — be patient. The educational background section explains the tcpdump flag or BPF filter being practiced.'
   },
   fr: {
     home: 'Accueil',
@@ -832,7 +846,12 @@ const i18n = {
     nmapwireDesc: 'Un wargame SSH de style UnderTheWire construit autour du scanner réseau Nmap. Chaque niveau introduit exactement un nouveau drapeau ou concept nmap. Scannez des conteneurs Docker sur un réseau interne, extrayez un mot de passe du résultat du scan et passez au niveau suivant.',
     nmapwireMeta: '21 niveaux · Nmap / Reconnaissance réseau · Débutant → Intermédiaire',
     nmapwireAbout: 'NmapWire est organisé en niveaux. Vous commencez au niveau 0 et progressez jusqu\'à la victoire. Chaque niveau nécessite de vous connecter en SSH au serveur, de scanner une cible sur le réseau interne à l\'aide de nmap et d\'extraire un mot de passe caché dans le résultat du scan pour passer au niveau suivant.',
-    nmapwireExtra: 'Chaque page de niveau vous indique exactement quoi scanner et vous donne un indice si vous êtes bloqué. La section contexte pédagogique explique le concept pratiqué.'
+    nmapwireExtra: 'Chaque page de niveau vous indique exactement quoi scanner et vous donne un indice si vous êtes bloqué. La section contexte pédagogique explique le concept pratiqué.',
+    tcpdumpwire: 'TcpdumpWire',
+    tcpdumpwireDesc: 'Un wargame SSH construit autour de tcpdump. Chaque niveau introduit un drapeau, un filtre ou une expression BPF tcpdump. Capturez le trafic des conteneurs Docker, extrayez les mots de passe des paquets et progressez à travers des défis d\'analyse réseau de plus en plus difficiles.',
+    tcpdumpwireMeta: '22 niveaux · Tcpdump / Analyse de paquets · Débutant → Avancé',
+    tcpdumpwireAbout: 'TcpdumpWire suit le même format que NmapWire. Vous commencez au niveau 0 et progressez. Chaque niveau nécessite de vous connecter en SSH au serveur, d\'exécuter tcpdump pour capturer le trafic spécifique des conteneurs en arrière-plan et de trouver le mot de passe caché dans les paquets capturés.',
+    tcpdumpwireExtra: 'Chaque page de niveau vous indique quel trafic capturer et donne un indice. Certains niveaux nécessitent d\'attendre le trafic périodique — soyez patient. La section contexte pédagogique explique le drapeau tcpdump ou le filtre BPF pratiqué.'
   }
 };
 
@@ -1224,9 +1243,166 @@ const levels = [
     }
   ];
 
+/* ── TCPDUMPWIRE LEVELS ──────────────────────────────────── */
+const tcpdumpLevels = [
+  {
+    n: 0, concept: { en: 'Orientation', fr: 'Orientation' }, target: null,
+    command: 'cat ~/note.txt',
+    password: 'start_sniffing',
+    goal: { en: 'Welcome to TcpdumpWire. This is the entry level.\n\nYour only task is to read the file in your home directory. It contains the password for the next level.', fr: 'Bienvenue sur TcpdumpWire. Niveau d\'entrée.\n\nLisez le fichier dans votre répertoire personnel.' },
+    hint: { en: 'cat ~/note.txt', fr: 'cat ~/note.txt' }, info: null
+  },
+  {
+    n: 1, concept: { en: '-D · List interfaces', fr: '-D · Lister les interfaces' }, target: null,
+    command: 'tcpdump -D',
+    goal: { en: 'Run tcpdump -D to list all network interfaces. One is a "Pseudo-device" with a common English word name. That word is the password.', fr: 'Exécutez tcpdump -D pour lister les interfaces. L\'une est un "Pseudo-device" dont le nom est le mot de passe.' },
+    hint: { en: 'tcpdump -D\n\nLook for the pseudo-device named "any".', fr: 'tcpdump -D\n\nCherchez le pseudo-device nommé "any".' },
+    info: { en: 'tcpdump -D lists all available network interfaces. The "any" pseudo-device captures on ALL interfaces simultaneously.', fr: 'tcpdump -D liste toutes les interfaces réseau. Le pseudo-device "any" capture sur TOUTES les interfaces à la fois.' }
+  },
+  {
+    n: 2, concept: { en: '-i any · Capture interface', fr: '-i any · Interface de capture' }, target: '172.21.0.10',
+    command: 'sudo tcpdump -i any -c 1 -n udp and host 172.21.0.10 and port 1337',
+    goal: { en: 'The beacon at 172.21.0.10 broadcasts UDP packets. Use -i any to capture on all interfaces. The destination port of the first UDP packet IS the password.', fr: 'Le beacon à 172.21.0.10 envoie des paquets UDP. Utilisez -i any pour capturer sur toutes les interfaces. Le port de destination du premier paquet UDP est le mot de passe.' },
+    hint: { en: 'sudo tcpdump -i any -c 1 -n udp and host 172.21.0.10 and port 1337\n\nThe destination port after ">" is the password.', fr: 'sudo tcpdump -i any -c 1 -n udp and host 172.21.0.10 and port 1337\n\nLe port de destination après ">" est le mot de passe.' },
+    info: { en: '-i selects the capture interface. -c N stops after N packets. Always use -n to skip slow DNS lookups.', fr: '-i sélectionne l\'interface. -c N s\'arrête après N paquets. Utilisez toujours -n pour éviter les lentes résolutions DNS.' }
+  },
+  {
+    n: 3, concept: { en: '-nn · No DNS resolution', fr: '-nn · Pas de résolution DNS' }, target: '172.21.0.10',
+    command: 'sudo tcpdump -i any -c 1 -nn host 172.21.0.10',
+    goal: { en: 'By default tcpdump resolves hostnames (using /etc/hosts). With -nn it shows raw IPs instead. The beacon\'s IP address is the password — only visible with -nn!', fr: 'Par défaut tcpdump résout les noms d\'hôte. Avec -nn, il montre les IP brutes. L\'adresse IP du beacon est le mot de passe — visible seulement avec -nn !' },
+    hint: { en: 'Compare: tcpdump (shows "beacon") vs tcpdump -nn (shows raw IP 172.21.0.10)', fr: 'Comparez : tcpdump (montre "beacon") vs tcpdump -nn (montre l\'IP brute 172.21.0.10)' },
+    info: { en: '-n disables hostname resolution. -nn also disables port name resolution. Always use -nn for faster captures.', fr: '-n désactive la résolution des noms d\'hôte. -nn désactive aussi la résolution des noms de ports.' }
+  },
+  {
+    n: 4, concept: { en: '-c N · Packet count', fr: '-c N · Comptage de paquets' }, target: '172.21.0.10',
+    command: 'sudo tcpdump -i any -c 50 -n portrange 9101-9110',
+    goal: { en: 'The beacon sends bursts of 10 UDP packets on ports 9101-9110 every ~13 seconds. Use -c to capture enough packets to see all ports. The last port (9110) is the password.', fr: 'Le beacon envoie des salves de 10 paquets UDP sur les ports 9101-9110. Utilisez -c pour capturer assez de paquets. Le dernier port (9110) est le mot de passe.' },
+    hint: { en: 'sudo tcpdump -i any -c 50 -n portrange 9101-9110\n\nLook for the destination port ending with ...9110.', fr: 'sudo tcpdump -i any -c 50 -n portrange 9101-9110\n\nCherchez le port de destination finissant par ...9110.' },
+    info: { en: '-c N tells tcpdump to exit after capturing N packets. Due to -i any interface duplication, each packet appears ~5 times.', fr: '-c N indique à tcpdump de s\'arrêter après N paquets. Avec -i any, chaque paquet apparaît ~5 fois.' }
+  },
+  {
+    n: 5, concept: { en: '-s N · Snaplen', fr: '-s N · Taille de capture' }, target: '172.21.0.10',
+    command: 'sudo tcpdump -i any -s 0 -c 1 -A host 172.21.0.10 and port 9003',
+    goal: { en: 'The beacon sends a 200-byte payload. With -s 50 you capture only the first 50 bytes — the password at byte 51 is cut off! Increase snaplen (-s 0) to see the full payload.', fr: 'Le beacon envoie un payload de 200 octets. Avec -s 50, seuls les 50 premiers octets sont capturés. Augmentez la taille (-s 0) pour tout voir.' },
+    hint: { en: 'First try: sudo tcpdump -i any -s 50 -c 1 -X host 172.21.0.10 and port 9003\nThen: sudo tcpdump -i any -s 0 -c 1 -X host 172.21.0.10 and port 9003\nCompare the difference.', fr: 'Essayez d\'abord avec -s 50, puis avec -s 0. Comparez la différence.' },
+    info: { en: '-s N sets the snaplen (snapshot length). -s 0 captures the entire packet. Smaller snaplen saves disk space.', fr: '-s N définit la longueur d\'instantané. -s 0 capture le paquet entier.' }
+  },
+  {
+    n: 6, concept: { en: '-X / -A · Content view', fr: '-X / -A · Vue du contenu' }, target: '172.21.0.10',
+    command: 'sudo tcpdump -i any -c 1 -A port 6001',
+    goal: { en: 'Time to see packet contents! -X shows hex dump + ASCII. -A shows only ASCII. The beacon sends the password in UDP payload on port 6001.', fr: 'Il est temps de voir le contenu des paquets ! -X montre hex + ASCII. -A montre seulement l\'ASCII. Le beacon envoie le mot de passe en UDP sur le port 6001.' },
+    hint: { en: 'sudo tcpdump -i any -c 1 -A port 6001\n\nLook for "PASS:..." in the output.', fr: 'sudo tcpdump -i any -c 1 -A port 6001\n\nCherchez "PASS:..." dans la sortie.' },
+    info: { en: '-X displays packet data in hex and ASCII. -A shows only the ASCII portion. -xx includes the ethernet header.', fr: '-X affiche les données en hexadécimal et ASCII. -A montre seulement la partie ASCII.' }
+  },
+  {
+    n: 7, concept: { en: '-v · Verbosity', fr: '-v · Verbosité' }, target: '172.21.0.10',
+    command: 'sudo tcpdump -i any -c 1 -v host 172.21.0.10',
+    goal: { en: 'The -v flag reveals extra packet details: TTL, checksum, options. All beacon UDP packets have TTL 64 — visible only with -v. Password format: ttl_64.', fr: 'Le drapeau -v révèle des détails supplémentaires : TTL, checksum. Tous les paquets du beacon ont un TTL de 64.' },
+    hint: { en: 'Compare output with and without -v. The TTL value is the password.', fr: 'Comparez la sortie avec et sans -v. La valeur TTL est le mot de passe.' },
+    info: { en: '-v adds verbosity (TTL, ID, checksum). -vv adds more. -q is quiet mode.', fr: '-v ajoute de la verbosité (TTL, ID, checksum). -vv en ajoute plus. -q est le mode silencieux.' }
+  },
+  {
+    n: 8, concept: { en: 'host filter', fr: 'Filtre host' }, target: '172.21.0.13',
+    command: 'sudo tcpdump -i any -c 1 -A host 172.21.0.13 and port 6003',
+    goal: { en: 'Filters isolate specific traffic. Two servers send data: 172.21.0.10 (beacon) and 172.21.0.13 (trafficmix). Only 172.21.0.13 sends the password on port 6003.', fr: 'Les filtres isolent le trafic spécifique. Deux serveurs envoient des données. Seul 172.21.0.13 a le mot de passe sur le port 6003.' },
+    hint: { en: 'sudo tcpdump -i any -c 1 -A host 172.21.0.13 and port 6003', fr: 'sudo tcpdump -i any -c 1 -A host 172.21.0.13 and port 6003' },
+    info: { en: 'host X filters to/from IP X. src X = source only. dst X = dest only.', fr: 'host X filtre vers/depuis l\'IP X. src X = source seulement. dst X = destination seulement.' }
+  },
+  {
+    n: 9, concept: { en: 'port filter', fr: 'Filtre port' }, target: '172.21.0.10',
+    command: 'sudo tcpdump -i any -c 1 -A port 6080',
+    goal: { en: 'Port filters isolate traffic for specific services. The beacon sends on many ports — only port 6080 carries the password.', fr: 'Les filtres de port isolent le trafic pour des services spécifiques. Le beacon envoie sur plusieurs ports — seul le port 6080 porte le mot de passe.' },
+    hint: { en: 'sudo tcpdump -i any -c 1 -A port 6080', fr: 'sudo tcpdump -i any -c 1 -A port 6080' },
+    info: { en: 'port N filters on port N. portrange N-M filters a range of ports.', fr: 'port N filtre sur le port N. portrange N-M filtre une plage de ports.' }
+  },
+  {
+    n: 10, concept: { en: 'tcp protocol filter', fr: 'Filtre protocole TCP' }, target: '172.21.0.12',
+    command: 'sudo tcpdump -i any -c 1 -A tcp and host 172.21.0.12 and port 8000',
+    goal: { en: 'Protocol filters select by Layer 4. Use the tcp filter to capture TCP packets from target-syn (172.21.0.12) on port 8000.', fr: 'Les filtres de protocole sélectionnent par couche 4. Utilisez le filtre tcp pour capturer les paquets TCP.' },
+    hint: { en: 'sudo tcpdump -i any -c 1 -A tcp and host 172.21.0.12 and port 8000', fr: 'sudo tcpdump -i any -c 1 -A tcp and host 172.21.0.12 and port 8000' },
+    info: { en: 'tcp / udp / icmp / arp filter by IP protocol number.', fr: 'tcp / udp / icmp / arp filtrent par numéro de protocole IP.' }
+  },
+  {
+    n: 11, concept: { en: 'udp protocol filter', fr: 'Filtre protocole UDP' }, target: '172.21.0.10',
+    command: 'sudo tcpdump -i any -c 1 -A port 7001',
+    goal: { en: 'Isolate UDP traffic. The beacon sends UDP broadcasts with the password on port 7001.', fr: 'Isolez le trafic UDP. Le beacon envoie des broadcasts UDP avec le mot de passe sur le port 7001.' },
+    hint: { en: 'sudo tcpdump -i any -c 1 -A port 7001', fr: 'sudo tcpdump -i any -c 1 -A port 7001' },
+    info: { en: 'UDP is connectionless (no handshake). Used by DNS, DHCP, streaming.', fr: 'UDP est sans connexion (pas de handshake).' }
+  },
+  {
+    n: 12, concept: { en: 'icmp filter', fr: 'Filtre ICMP' }, target: '172.21.0.11',
+    command: 'sudo tcpdump -i any -c 2 -A icmp',
+    goal: { en: 'target-icmp (172.21.0.11) sends ICMP echo requests periodically. Use the icmp filter to capture them. The password is in the ICMP payload.', fr: 'target-icmp envoie des requêtes d\'écho ICMP périodiquement. Utilisez le filtre icmp pour les capturer.' },
+    hint: { en: 'sudo tcpdump -i any -c 2 -A icmp\n\nLook for "PASS:..." in the output.', fr: 'sudo tcpdump -i any -c 2 -A icmp\n\nCherchez "PASS:..." dans la sortie.' },
+    info: { en: 'ICMP is used for diagnostics (ping, traceroute). Filtering icmp isolates ping traffic.', fr: 'ICMP est utilisé pour les diagnostics (ping, traceroute).' }
+  },
+  {
+    n: 13, concept: { en: 'arp filter', fr: 'Filtre ARP' }, target: '172.21.0.13',
+    command: 'sudo tcpdump -i any -c 1 -n arp',
+    goal: { en: 'target-traffic (172.21.0.13) sends gratuitous ARP announcements. Capture one ARP packet. The password is in the ARP message.', fr: 'target-traffic envoie des annonces ARP gratuites. Capturez un paquet ARP.' },
+    hint: { en: 'sudo tcpdump -i any -c 1 -n arp', fr: 'sudo tcpdump -i any -c 1 -n arp' },
+    info: { en: 'ARP (Address Resolution Protocol) resolves IPs to MAC addresses.', fr: 'ARP (Address Resolution Protocol) résout les IP en adresses MAC.' }
+  },
+  {
+    n: 14, concept: { en: 'and / or / not combinators', fr: 'Combinaisons et/ou/non' }, target: '172.21.0.13',
+    command: "sudo tcpdump -i any -c 1 -A 'host 172.21.0.13 and port 6002'",
+    goal: { en: 'Combine multiple conditions! target-traffic sends mixed traffic. Only packets matching BOTH host AND port have the password.', fr: 'Combinez plusieurs conditions ! target-traffic envoie du trafic mixte. Seuls les paquets correspondant à l\'hôte ET au port ont le mot de passe.' },
+    hint: { en: "sudo tcpdump -i any -c 1 -A 'host 172.21.0.13 and port 6002'", fr: "sudo tcpdump -i any -c 1 -A 'host 172.21.0.13 and port 6002'" },
+    info: { en: 'and / or / not are logical operators. Parentheses group: \'host X and (port 80 or port 443)\'', fr: 'and / or / not sont des opérateurs logiques.' }
+  },
+  {
+    n: 15, concept: { en: 'tcp[tcpflags] & SYN', fr: 'tcp[tcpflags] & SYN' }, target: '172.21.0.12',
+    command: "sudo tcpdump -i any -c 1 -A 'tcp[tcpflags] & tcp-syn != 0 and host 172.21.0.12 and port 9999'",
+    goal: { en: 'Filter by TCP flags! target-syn sends SYN packets. Use the tcpflags syntax to capture only SYNs. IMPORTANT: filter expression LAST in command.', fr: 'Filtrez par drapeaux TCP ! target-syn envoie des paquets SYN. Utilisez la syntaxe tcpflags.' },
+    hint: { en: "sudo tcpdump -i any -c 1 -A 'tcp[tcpflags] & tcp-syn != 0 and host 172.21.0.12 and port 9999'", fr: "sudo tcpdump -i any -c 1 -A 'tcp[tcpflags] & tcp-syn != 0 and host 172.21.0.12 and port 9999'" },
+    info: { en: 'tcp[tcpflags] reads the TCP flags byte. & tcp-syn != 0 = SYN set. Other flags: rst, fin, ack.', fr: 'tcp[tcpflags] lit l\'octet des drapeaux TCP.' }
+  },
+  {
+    n: 16, concept: { en: 'tcp[13] == N (RST)', fr: 'tcp[13] == N (RST)' }, target: '172.21.0.12',
+    command: "sudo tcpdump -i any -c 1 -A 'tcp[13] == 4 and host 172.21.0.12'",
+    goal: { en: 'Direct byte-offset filtering. tcp[13] == 2 = SYN, == 4 = RST, == 1 = FIN. target-syn also sends RST packets. Capture one.', fr: 'Filtrage direct par décalage d\'octet. tcp[13] == 2 = SYN, == 4 = RST, == 1 = FIN.' },
+    hint: { en: "sudo tcpdump -i any -c 1 -A 'tcp[13] == 4 and host 172.21.0.12'", fr: "sudo tcpdump -i any -c 1 -A 'tcp[13] == 4 and host 172.21.0.12'" },
+    info: { en: 'tcp[13] is byte 13 of TCP header (flags). Bits: FIN=1, SYN=2, RST=4, PSH=8, ACK=16.', fr: 'tcp[13] est l\'octet 13 de l\'en-tête TCP (drapeaux).' }
+  },
+  {
+    n: 17, concept: { en: 'icmp[icmptype] == 8', fr: 'icmp[icmptype] == 8' }, target: '172.21.0.10',
+    command: "sudo tcpdump -i any -c 1 -A 'icmp[icmptype] == 8 and dst host 172.21.0.10'",
+    goal: { en: 'ICMP byte-offset filters! icmp[icmptype] == 8 matches echo requests. target-icmp sends echo requests to 172.21.0.10 every 7 seconds.', fr: 'Filtres ICMP par décalage d\'octet ! icmp[icmptype] == 8 correspond aux requêtes d\'écho.' },
+    hint: { en: "sudo tcpdump -i any -c 1 -A 'icmp[icmptype] == 8 and dst host 172.21.0.10'\n\nMay take ~7s for the packet to arrive.", fr: "sudo tcpdump -i any -c 1 -A 'icmp[icmptype] == 8 and dst host 172.21.0.10'\n\nPeut prendre ~7s." },
+    info: { en: 'icmp[icmptype] accesses the ICMP type byte. Type 8 = Echo Request, Type 0 = Echo Reply.', fr: 'icmp[icmptype] accède à l\'octet de type ICMP.' }
+  },
+  {
+    n: 18, concept: { en: 'Complex combined tcp[]', fr: 'Combinaison complexe tcp[]' }, target: '172.21.0.12',
+    command: "sudo tcpdump -i any -c 1 -A 'tcp[13] == 2 and src host 172.21.0.12 and port 8001'",
+    goal: { en: 'Combine byte-offset with BPF filters! Isolate only SYN packets FROM 172.21.0.12 on port 8001.', fr: 'Combinez le décalage d\'octet avec les filtres BPF ! Isolez seulement les SYN en provenance de 172.21.0.12.' },
+    hint: { en: "sudo tcpdump -i any -c 1 -A 'tcp[13] == 2 and src host 172.21.0.12 and port 8001'", fr: "sudo tcpdump -i any -c 1 -A 'tcp[13] == 2 and src host 172.21.0.12 and port 8001'" },
+    info: { en: 'Detects SYN scans from a specific source IP. Standard intrusion detection technique.', fr: 'Détecte les scans SYN depuis une IP source spécifique.' }
+  },
+  {
+    n: 19, concept: { en: 'Complex combined icmp[]', fr: 'Combinaison complexe icmp[]' }, target: '172.21.0.1',
+    command: "sudo tcpdump -i any -c 1 -A 'icmp[icmptype] == 13 and dst host 172.21.0.1'",
+    goal: { en: 'Combine ICMP type filter with destination address. Capture ICMP timestamp requests (type 13) to the Docker gateway (172.21.0.1).', fr: 'Combinez le filtre de type ICMP avec l\'adresse de destination. Capturez les requêtes d\'horodatage ICMP (type 13).' },
+    hint: { en: "sudo tcpdump -i any -c 1 -A 'icmp[icmptype] == 13 and dst host 172.21.0.1'", fr: "sudo tcpdump -i any -c 1 -A 'icmp[icmptype] == 13 and dst host 172.21.0.1'" },
+    info: { en: 'Complex filters are the bread and butter of network forensics.', fr: 'Les filtres complexes sont le pain quotidien de la criminalistique réseau.' }
+  },
+  {
+    n: 20, concept: { en: '-w / -r · Save + Read', fr: '-w / -r · Sauvegarder + Lire' }, target: '172.21.0.10',
+    command: 'sudo tcpdump -i any -c 1 -w /tmp/cap.pcap host 172.21.0.10 and port 6000 && tcpdump -r /tmp/cap.pcap -A',
+    goal: { en: 'Save a capture to a .pcap file with -w, then re-read it with -r. No sudo needed for reading! The re-read output contains the password.', fr: 'Sauvegardez une capture avec -w, puis relisez-la avec -r. Pas besoin de sudo pour lire !' },
+    hint: { en: 'sudo tcpdump -i any -c 1 -w /tmp/cap.pcap host 172.21.0.10 and port 6000\n  tcpdump -r /tmp/cap.pcap -A', fr: 'sudo tcpdump -i any -c 1 -w /tmp/cap.pcap host 172.21.0.10 and port 6000\n  tcpdump -r /tmp/cap.pcap -A' },
+    info: { en: '-w saves raw packets to .pcap format. -r reads a saved file (no root needed).', fr: '-w enregistre les paquets au format .pcap. -r lit un fichier sauvegardé.' }
+  },
+  {
+    n: 21, concept: { en: 'Complete', fr: 'Terminé' }, win: true,
+    goal: { en: 'You made it.\n\nYou started with a simple file read and worked your way through interface selection, DNS control, packet counting, snaplen, content viewing, verbosity, BPF filters, protocol filters, logical combinators, TCP flag filters, ICMP byte-offset filters, complex combined expressions, save/read workflows — every essential tcpdump skill.\n\nCongratulations. You have completed TcpdumpWire.\n\n— bitflip', fr: 'Vous avez réussi.\n\nFélicitations. Vous avez terminé TcpdumpWire.\n\n— bitflip' }
+  }
+];
+
 /* ── STATE ──────────────────────────────────────────────── */
 let currentPage = 'home';
+let currentGame = 'nmapwire';  /* 'nmapwire' or 'tcpdumpwire' */
 let levelsOpen  = false;
+let tcpdumpLevelsOpen = false;
 
 function setLang(lang) {
   currentLang = lang;
@@ -1239,6 +1415,7 @@ function setLang(lang) {
   document.getElementById('nav-rules').textContent = i18n[lang].rules;
   document.getElementById('nav-info').textContent = i18n[lang].info;
   document.getElementById('label-nmapwire').textContent = 'NmapWire';
+  document.getElementById('label-tcpdumpwire').textContent = i18n[lang].tcpdumpwire;
 
   buildSidebarLevels();
   renderPage(currentPage);
@@ -1246,12 +1423,25 @@ function setLang(lang) {
 
 /* ── SIDEBAR LEVELS ─────────────────────────────────────── */
 function buildSidebarLevels() {
-  const container = document.getElementById('nav-levels');
   const lang = currentLang;
+
+  // NmapWire levels
+  const container = document.getElementById('nav-levels');
   container.innerHTML = levels.map(l => `
     <div class="nav-level-item ${l.tbd ? 'tbd-nav' : ''}"
          id="nav-level-${l.n}"
-         onclick="navigate('level-${l.n}')">
+         onclick="navigateGameLevel('nmapwire', ${l.n})">
+      <span class="nav-level-dot"></span>
+      <span>${i18n[lang].level} ${l.n}${l.win ? ' → ' + i18n[lang].win : ''}</span>
+    </div>
+  `).join('');
+
+  // TcpdumpWire levels
+  const container2 = document.getElementById('nav-tcpdump-levels');
+  container2.innerHTML = tcpdumpLevels.map(l => `
+    <div class="nav-level-item"
+         id="nav-tcpdump-level-${l.n}"
+         onclick="navigateGameLevel('tcpdumpwire', ${l.n})">
       <span class="nav-level-dot"></span>
       <span>${i18n[lang].level} ${l.n}${l.win ? ' → ' + i18n[lang].win : ''}</span>
     </div>
@@ -1268,6 +1458,25 @@ function toggleLevels() {
   document.getElementById('nav-levels').classList.toggle('open', levelsOpen);
   document.getElementById('nav-arrow').style.transform = levelsOpen ? 'rotate(90deg)' : '';
   document.getElementById('nav-nmapwire').classList.toggle('active', levelsOpen);
+}
+
+function toggleTcpdumpLevels() {
+  tcpdumpLevelsOpen = !tcpdumpLevelsOpen;
+  document.getElementById('nav-tcpdump-levels').classList.toggle('open', tcpdumpLevelsOpen);
+  document.getElementById('nav-tcpdump-arrow').style.transform = tcpdumpLevelsOpen ? 'rotate(90deg)' : '';
+  document.getElementById('nav-tcpdumpwire').classList.toggle('active', tcpdumpLevelsOpen);
+}
+
+function navigateGameLevel(game, n) {
+  currentGame = game;
+  if (game === 'nmapwire') {
+    if (!levelsOpen) toggleLevels();
+    if (tcpdumpLevelsOpen) toggleTcpdumpLevels();
+  } else {
+    if (!tcpdumpLevelsOpen) toggleTcpdumpLevels();
+    if (levelsOpen) toggleLevels();
+  }
+  navigate('level-' + n);
 }
 
 /* ── COPY COMMAND ────────────────────────────────────────── */
@@ -1320,13 +1529,29 @@ function navigate(page) {
     document.getElementById('nav-home').classList.add('active');
   } else if (page === 'nmapwire') {
     document.getElementById('nav-nmapwire').classList.add('active');
+    currentGame = 'nmapwire';
     if (!levelsOpen) toggleLevels();
+    if (tcpdumpLevelsOpen) toggleTcpdumpLevels();
+  } else if (page === 'tcpdumpwire') {
+    document.getElementById('nav-tcpdumpwire').classList.add('active');
+    currentGame = 'tcpdumpwire';
+    if (!tcpdumpLevelsOpen) toggleTcpdumpLevels();
+    if (levelsOpen) toggleLevels();
   } else if (page.startsWith('level-')) {
     const n = parseInt(page.split('-')[1]);
-    const el = document.getElementById(`nav-level-${n}`);
-    if (el) el.classList.add('active');
-    if (!levelsOpen) toggleLevels();
-    document.getElementById('nav-nmapwire').classList.add('active');
+    if (currentGame === 'nmapwire') {
+      const el = document.getElementById(`nav-level-${n}`);
+      if (el) el.classList.add('active');
+      if (!levelsOpen) toggleLevels();
+      if (tcpdumpLevelsOpen) toggleTcpdumpLevels();
+      document.getElementById('nav-nmapwire').classList.add('active');
+    } else {
+      const el = document.getElementById(`nav-tcpdump-level-${n}`);
+      if (el) el.classList.add('active');
+      if (!tcpdumpLevelsOpen) toggleTcpdumpLevels();
+      if (levelsOpen) toggleLevels();
+      document.getElementById('nav-tcpdumpwire').classList.add('active');
+    }
   } else if (page === 'rules') {
     document.getElementById('nav-rules').classList.add('active');
   } else if (page === 'info') {
@@ -1343,6 +1568,7 @@ function renderPage(page) {
 
   if (page === 'home')              html = renderHome();
   else if (page === 'nmapwire')     html = renderNmapwire();
+  else if (page === 'tcpdumpwire')  html = renderTcpdumpwire();
   else if (page === 'rules')        html = renderRules();
   else if (page === 'info')         html = renderInfo();
   else if (page.startsWith('level-')) {
@@ -1376,6 +1602,21 @@ function renderHome() {
       </div>
       <div class="wargame-card-meta">
         ${t.nmapwireMeta}
+      </div>
+      <br>
+      <span class="btn">${t.play} →</span>
+    </div>
+
+    <div class="wargame-card" onclick="navigate('tcpdumpwire')" style="margin-top:16px;">
+      <div style="display:flex; align-items:center; gap:12px; margin-bottom:10px;">
+        <div class="wargame-card-title">${t.tcpdumpwire}</div>
+        <span class="badge">Active</span>
+      </div>
+      <div class="wargame-card-desc">
+        ${t.tcpdumpwireDesc}
+      </div>
+      <div class="wargame-card-meta">
+        ${t.tcpdumpwireMeta}
       </div>
       <br>
       <span class="btn">${t.play} →</span>
@@ -1452,6 +1693,71 @@ function renderNmapwire() {
   `;
 }
 
+/* ── TCPDUMPWIRE OVERVIEW ───────────────────────────────── */
+function renderTcpdumpwire() {
+  const lang = currentLang;
+  const t = i18n[lang];
+  const levs = tcpdumpLevels;
+  const tableRows = levs.map(l => `
+    <tr>
+      <td class="level-link" onclick="navigateGameLevel('tcpdumpwire', ${l.n})">
+        ${t.level} ${l.n}${l.win ? ' → ' + t.win : ''}
+      </td>
+      <td>${l.concept[lang]}</td>
+      <td>${l.target || 'none'}</td>
+    </tr>
+  `).join('');
+
+  return `
+    <div class="page-title">${t.tcpdumpwire}</div>
+    <div class="page-subtitle">A tcpdump wargame</div>
+
+    <h2>${t.about}</h2>
+    <p>${t.tcpdumpwireAbout}</p>
+    <p>${t.tcpdumpwireExtra}</p>
+
+    <h2>${t.howToConnect}</h2>
+
+    <div class="info-box">
+      <div class="info-box-title">${t.connectionInfo}</div>
+      <div class="info-row">
+        <span class="info-label">${t.host}</span>
+        <span class="info-value accent">${HOST}</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">${t.port}</span>
+        <span class="info-value">${PORT}</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">${t.user}</span>
+        <span class="info-value">tdump_0</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">${t.password}</span>
+        <span class="info-value">start_sniffing</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">${t.firstStep}</span>
+        <span class="info-value">cat ~/note.txt</span>
+      </div>
+    </div>
+
+    <div class="cmd-block"><span class="prompt">$</span> ssh tdump_0@${HOST} -p ${PORT}<button class="cmd-copy-btn" onclick="copyCmd(this,'ssh tdump_0@${HOST} -p ${PORT}')">${lang === 'en' ? 'copy' : 'copier'}</button></div>
+
+    <h2>${t.levelTable}</h2>
+    <table class="level-table">
+      <thead>
+        <tr>
+          <th>${t.level}</th>
+          <th>${t.concept}</th>
+          <th>${t.target}</th>
+        </tr>
+      </thead>
+      <tbody>${tableRows}</tbody>
+    </table>
+  `;
+}
+
 /* ── COLLAPSIBLE BUILDER ─────────────────────────────────── */
 function buildCollapsible({ id, label, type, bodyHtml }) {
   const extraClass = type === 'hint' ? 'hint-collapsible' : 'info-collapsible';
@@ -1478,11 +1784,12 @@ function buildCollapsible({ id, label, type, bodyHtml }) {
 function renderLevel(n) {
   const lang = currentLang;
   const t = i18n[lang];
-  const level = levels.find(l => l.n === n);
+  const levs = currentGame === 'tcpdumpwire' ? tcpdumpLevels : levels;
+  const level = levs.find(l => l.n === n);
   if (!level) return '<p>Level not found.</p>';
 
-  const prev = levels.find(l => l.n === n - 1);
-  const next = levels.find(l => l.n === n + 1);
+  const prev = levs.find(l => l.n === n - 1);
+  const next = levs.find(l => l.n === n + 1);
 
   if (level.win) {
     const nextAfterWin = levels.find(l => l.n === n + 1);
@@ -1511,7 +1818,7 @@ function renderLevel(n) {
     ? level.hint[lang].split('\n').map(line => {
         line = line.trim();
         if (!line) return '';
-        if (line.startsWith('nmap') || line.startsWith('sudo nmap') || line.startsWith('cat')) {
+        if (line.startsWith('nmap') || line.startsWith('sudo nmap') || line.startsWith('cat') || line.startsWith('tcpdump') || line.startsWith('sudo tcpdump') || line.startsWith('ping')) {
           const escaped = line.replace(/'/g, "\\'");
           const copyLabel = lang === 'en' ? 'copy' : 'copier';
           return `<div class="cmd-block"><span class="prompt">$</span> ${line}<button class="cmd-copy-btn" onclick="copyCmd(this,'${escaped}')">${copyLabel}</button></div>`;
@@ -1532,10 +1839,12 @@ function renderLevel(n) {
       }).join('')
     : '';
 
+  const level0Pwd = currentGame === 'tcpdumpwire' ? 'start_sniffing' : 'level0';
+  const userPrefix = currentGame === 'tcpdumpwire' ? 'tdump_' : 'level';
   const passwordRow = n === 0
     ? `<div class="info-row">
         <span class="info-label">${t.password}</span>
-        <span class="info-value">level0</span>
+        <span class="info-value">${level0Pwd}</span>
        </div>`
     : '';
 
@@ -1586,13 +1895,13 @@ function renderLevel(n) {
       </div>
       <div class="info-row">
         <span class="info-label">${t.user}</span>
-        <span class="info-value">level${n}</span>
+        <span class="info-value">${userPrefix}${n}</span>
       </div>
       ${passwordRow}
       ${targetRow}
     </div>
 
-    <div class="cmd-block"><span class="prompt">$</span> ssh level${n}@${HOST} -p ${PORT}<button class="cmd-copy-btn" onclick="copyCmd(this,'ssh level${n}@${HOST} -p ${PORT}')">${lang === 'en' ? 'copy' : 'copier'}</button></div>
+    <div class="cmd-block"><span class="prompt">$</span> ssh ${userPrefix}${n}@${HOST} -p ${PORT}<button class="cmd-copy-btn" onclick="copyCmd(this,'ssh ${userPrefix}${n}@${HOST} -p ${PORT}')">${lang === 'en' ? 'copy' : 'copier'}</button></div>
 
     ${hintSection}
     ${infoSection}
@@ -1620,8 +1929,8 @@ function renderRules() {
     'Do not attack or disrupt the server infrastructure or network outside of your assigned level.',
     'Do not share passwords publicly. Let others find them through the game.',
     'Do not attempt to access other students\' accounts or home directories.',
-    'The password is always derivable from the nmap output alone. If you need to do something else, re-read the hint.',
-    'sudo is available for nmap only. sudo bash, sudo cat, and similar commands are blocked by design.',
+    'The password is always derivable from the tool output or captured traffic alone.',
+    'sudo is available for nmap and tcpdump only. sudo bash, sudo cat, and similar commands are blocked by design.',
     'If you believe you have found a bug or an unintended solution, report it to your instructor.',
     'This platform is for educational use only. Techniques practiced here must not be applied outside this environment without authorisation.'
   ] : [
@@ -1629,8 +1938,8 @@ function renderRules() {
     'N\'attaquez pas et ne perturbez pas l\'infrastructure du serveur ou le réseau en dehors de votre niveau assigné.',
     'Ne partagez pas les mots de passe publiquement. Laissez les autres les trouver par le jeu.',
     'N\'essayez pas d\'accéder aux comptes ou aux répertoires personnels d\'autres étudiants.',
-    'Le mot de passe peut toujours être dérivé uniquement de la sortie nmap. Si vous devez faire autre chose, relisez l\'indice.',
-    'sudo est disponible uniquement pour nmap. sudo bash, sudo cat et les commandes similaires sont bloqués par conception.',
+    'Le mot de passe peut toujours être dérivé uniquement de la sortie de l\'outil ou du trafic capturé.',
+    'sudo est disponible uniquement pour nmap et tcpdump. sudo bash, sudo cat et les commandes similaires sont bloqués par conception.',
     'Si vous pensez avoir trouvé un bug ou une solution non intentionnelle, signalez-le à votre instructeur.',
     'Cette plateforme est réservée à un usage pédagogique. Les techniques pratiquées ici ne doivent pas être appliquées en dehors de cet environnement sans autorisation.'
   ];
@@ -1666,7 +1975,7 @@ function renderInfo() {
       </div>
       <div class="info-row">
         <span class="info-label">${t.wargame}</span>
-        <span class="info-value">NmapWire</span>
+        <span class="info-value">NmapWire + TcpdumpWire</span>
       </div>
       <div class="info-row">
         <span class="info-label">${t.host}</span>
@@ -1692,12 +2001,12 @@ function renderInfo() {
 
     <h2>${t.about}</h2>
     <p>${lang === 'en' 
-      ? 'bitflip is a CTF platform built for the Nmap lab. NmapWire is modelled after UnderTheWire, an SSH-based wargame where each level teaches exactly one concept through practice.'
-      : 'bitflip est une plateforme CTF conçue pour le labo Nmap. NmapWire est calqué sur UnderTheWire, un wargame basé sur SSH où chaque niveau enseigne exactement un concept par la pratique.'}</p>
+      ? 'bitflip is a CTF platform built for cybersecurity labs. NmapWire and TcpdumpWire are modelled after UnderTheWire, an SSH-based wargame where each level teaches exactly one concept through practice.'
+      : 'bitflip est une plateforme CTF conçue pour les labos de cybersécurité. NmapWire et TcpdumpWire sont calqués sur UnderTheWire, un wargame basé sur SSH où chaque niveau enseigne exactement un concept par la pratique.'}</p>
 
     <p>${lang === 'en'
-      ? 'Students connect via SSH and use nmap to scan Docker containers on an isolated internal network. Passwords are embedded in the scan output.'
-      : 'Les étudiants se connectent via SSH et utilisent nmap pour scanner des conteneurs Docker sur un réseau interne isolé. Les mots de passe sont intégrés dans la sortie du scan.'}</p>
+      ? 'Students connect via SSH and use nmap or tcpdump to interact with Docker containers on an isolated internal network. Passwords are embedded in the tool output or captured traffic.'
+      : 'Les étudiants se connectent via SSH et utilisent nmap ou tcpdump pour interagir avec des conteneurs Docker sur un réseau interne isolé. Les mots de passe sont intégrés dans la sortie de l\'outil ou le trafic capturé.'}</p>
 
     <div style="margin-top: 48px; border-top: 1px solid var(--c-border); padding-top: 24px; color: var(--c-muted); font-size: 11px;">
       ${t.madeBy}
@@ -1709,6 +2018,19 @@ function renderInfo() {
 buildSidebarLevels();
 setLang('en');
 navigate('home');
+
+// Fix copy button on commands with && (use first part)
+document.addEventListener('click', function(e) {
+  const btn = e.target.closest('.cmd-copy-btn');
+  if (!btn) return;
+  const block = btn.closest('.cmd-block');
+  if (!block) return;
+  const text = block.textContent.replace('copy', '').replace('copier', '').replace('copied!', '').replace('copié !', '').trim();
+  if (text.includes('&&')) {
+    e.preventDefault();
+    navigator.clipboard.writeText(text);
+  }
+});
 
 </script>
 </body>
