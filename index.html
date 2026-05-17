@@ -792,12 +792,12 @@ const i18n = {
     homeDesc: 'The wargames hosted on bitflip are designed to help you learn and practice network reconnaissance in the form of hands-on, level-based challenges. Each game is played entirely over SSH with no setup required on your end.',
     homePick: 'Pick a game below to get started.',
     nmapwireDesc: 'An UnderTheWire-style SSH wargame built around the Nmap network scanner. Each level introduces exactly one new nmap flag or concept. Scan Docker containers on an internal network, extract a password from the scan output, and advance to the next level.',
-    nmapwireMeta: '22 levels · Nmap / Network Recon · Beginner → Intermediate',
+    nmapwireMeta: '28 levels · Nmap / Network Recon · Beginner → Intermediate',
     nmapwireAbout: 'NmapWire is organised in levels. You start at Level 0 and work your way to the WIN. Each level requires you to SSH into the server, scan a target on the internal network using nmap, and extract a password hidden in the scan output to advance to the next level.',
     nmapwireExtra: 'Each level page tells you exactly what to scan and gives you a hint if you are stuck. The educational background section explains the concept being practiced.',
     tcpdumpwire: 'TcpdumpWire',
     tcpdumpwireDesc: 'An SSH wargame built around tcpdump. Each level introduces one tcpdump flag, filter, or BPF expression. Capture traffic from Docker containers, extract passwords from packet data, and advance through progressively harder network analysis challenges.',
-    tcpdumpwireMeta: '22 levels · Tcpdump / Packet Analysis · Beginner → Advanced',
+    tcpdumpwireMeta: '28 levels · Tcpdump / Packet Analysis · Beginner → Advanced',
     tcpdumpwireAbout: 'TcpdumpWire follows the same format as NmapWire. You start at level 0 and work your way up. Each level requires you to SSH into the server, run tcpdump to capture specific traffic from background containers, and find the password hidden in the captured packets.',
     tcpdumpwireExtra: 'Each level page tells you what traffic to capture and gives a hint. Some levels require waiting for periodic traffic — be patient. The educational background section explains the tcpdump flag or BPF filter being practiced.'
   },
@@ -844,12 +844,12 @@ const i18n = {
     homeDesc: 'Les wargames hébergés sur bitflip sont conçus pour vous aider à apprendre et à pratiquer la reconnaissance réseau sous forme de défis pratiques par niveaux. Chaque jeu se joue entièrement via SSH sans aucune configuration requise de votre part.',
     homePick: 'Choisissez un jeu ci-dessous pour commencer.',
     nmapwireDesc: 'Un wargame SSH de style UnderTheWire construit autour du scanner réseau Nmap. Chaque niveau introduit exactement un nouveau drapeau ou concept nmap. Scannez des conteneurs Docker sur un réseau interne, extrayez un mot de passe du résultat du scan et passez au niveau suivant.',
-    nmapwireMeta: '21 niveaux · Nmap / Reconnaissance réseau · Débutant → Intermédiaire',
+    nmapwireMeta: '28 niveaux · Nmap / Reconnaissance réseau · Débutant → Intermédiaire',
     nmapwireAbout: 'NmapWire est organisé en niveaux. Vous commencez au niveau 0 et progressez jusqu\'à la victoire. Chaque niveau nécessite de vous connecter en SSH au serveur, de scanner une cible sur le réseau interne à l\'aide de nmap et d\'extraire un mot de passe caché dans le résultat du scan pour passer au niveau suivant.',
     nmapwireExtra: 'Chaque page de niveau vous indique exactement quoi scanner et vous donne un indice si vous êtes bloqué. La section contexte pédagogique explique le concept pratiqué.',
     tcpdumpwire: 'TcpdumpWire',
     tcpdumpwireDesc: 'Un wargame SSH construit autour de tcpdump. Chaque niveau introduit un drapeau, un filtre ou une expression BPF tcpdump. Capturez le trafic des conteneurs Docker, extrayez les mots de passe des paquets et progressez à travers des défis d\'analyse réseau de plus en plus difficiles.',
-    tcpdumpwireMeta: '22 niveaux · Tcpdump / Analyse de paquets · Débutant → Avancé',
+    tcpdumpwireMeta: '28 niveaux · Tcpdump / Analyse de paquets · Débutant → Avancé',
     tcpdumpwireAbout: 'TcpdumpWire suit le même format que NmapWire. Vous commencez au niveau 0 et progressez. Chaque niveau nécessite de vous connecter en SSH au serveur, d\'exécuter tcpdump pour capturer le trafic spécifique des conteneurs en arrière-plan et de trouver le mot de passe caché dans les paquets capturés.',
     tcpdumpwireExtra: 'Chaque page de niveau vous indique quel trafic capturer et donne un indice. Certains niveaux nécessitent d\'attendre le trafic périodique — soyez patient. La section contexte pédagogique explique le drapeau tcpdump ou le filtre BPF pratiqué.'
   }
@@ -1234,11 +1234,137 @@ const levels = [
     },
     {
       n: 21,
+      concept: { en: '--script vuln', fr: '--script vuln' },
+      target: '172.20.0.25',
+      command: 'nmap -vv -Pn -p 80 --script http-trace 172.20.0.25',
+      goal: {
+        en: `A web server at 172.20.0.25 has a known vulnerability — the TRACE method is enabled. This allows attackers to echo requests back, potentially exposing sensitive headers.\n\nRun the vulnerability scan against port 80 and read the script output carefully. The password is hidden in the response headers revealed by the script.`,
+        fr: `Un serveur web à 172.20.0.25 a une vulnérabilité connue — la méthode TRACE est activée. Cela permet aux attaquants d'écho les requêtes, exposant potentiellement des en-têtes sensibles.\n\nExécutez le scan de vulnérabilités contre le port 80 et lisez attentivement la sortie du script. Le mot de passe est caché dans les en-têtes de réponse révélés par le script.`
+      },
+      hint: {
+        en: `The --script vuln flag runs all scripts in the vulnerability category, including http-trace:\n\n  nmap -vv -Pn -p 80 --script http-trace 172.20.0.25\n\nUse -vv for extra verbosity so the script prints response headers. Look for the X-Flag header in the output.`,
+        fr: `Le drapeau --script vuln exécute tous les scripts de la catégorie vulnérabilités, y compris http-trace :\n\n  nmap -vv -Pn -p 80 --script http-trace 172.20.0.25\n\nUtilisez -vv pour plus de verbosité afin que le script affiche les en-têtes de réponse. Cherchez l'en-tête X-Flag dans la sortie.`
+      },
+      info: {
+        en: `The --script vuln category runs scripts that check for known vulnerabilities. The http-trace script sends an HTTP TRACE request and reports whether the method is enabled. If it is, the server echoes back the request headers, which can reveal sensitive information like cookies or authentication tokens. This is a common web server misconfiguration.`,
+        fr: `La catégorie --script vuln exécute des scripts qui vérifient les vulnérabilités connues. Le script http-trace envoie une requête HTTP TRACE et indique si la méthode est activée. Si c'est le cas, le serveur renvoie les en-têtes de la requête, ce qui peut révéler des informations sensibles comme des cookies ou des tokens d'authentification.`
+      }
+    },
+    {
+      n: 22,
+      concept: { en: '--script ssl-cert', fr: '--script ssl-cert' },
+      target: '172.20.0.26',
+      command: 'nmap -Pn -sV --script ssl-cert -p 443 172.20.0.26',
+      goal: {
+        en: `A TLS server is running at 172.20.0.26 on port 443. Not all ciphers are created equal — some are weak.\n\nAudit the server's certificate and cipher suite. The password is hidden in the certificate's common name (CN) field.`,
+        fr: `Un serveur TLS tourne à 172.20.0.26 sur le port 443. Tous les chiffrements ne se valent pas — certains sont faibles.\n\nAuditez le certificat et la suite de chiffrements du serveur. Le mot de passe est caché dans le champ nom commun (CN) du certificat.`
+      },
+      hint: {
+        en: `Use --script ssl-cert to inspect the TLS certificate, and --script ssl-enum-ciphers to evaluate cipher strength:\n\n  nmap -Pn -sV --script ssl-cert -p 443 172.20.0.26\n\nLook for the Subject: commonName field in the ssl-cert output.`,
+        fr: `Utilisez --script ssl-cert pour inspecter le certificat TLS, et --script ssl-enum-ciphers pour évaluer la force des chiffrements :\n\n  nmap -Pn -sV --script ssl-cert -p 443 172.20.0.26\n\nCherchez le champ Subject: commonName dans la sortie de ssl-cert.`
+      },
+      info: {
+        en: `The --script ssl-cert extracts and displays the X.509 certificate presented by an SSL/TLS server. It shows the subject, issuer, validity period, and public key details. The common name (CN) in the subject field is the primary identity the certificate claims. ssl-enum-ciphers enumerates all cipher suites the server accepts and assigns grades (A through F), helping identify weak cryptographic configurations.`,
+        fr: `Le script --script ssl-cert extrait et affiche le certificat X.509 présenté par un serveur SSL/TLS. Il montre le sujet, l'émetteur, la période de validité et les détails de la clé publique. Le nom commun (CN) dans le champ sujet est l'identité principale revendiquée par le certificat. ssl-enum-ciphers énumère toutes les suites de chiffrement acceptées par le serveur et attribue des notes (A à F), aidant à identifier les configurations cryptographiques faibles.`
+      }
+    },
+    {
+      n: 23,
+      concept: { en: '--script ssh-auth-methods', fr: '--script ssh-auth-methods' },
+      target: '172.20.0.27',
+      command: 'nmap -p 22 --script ssh-auth-methods 172.20.0.27',
+      goal: {
+        en: `An SSH server is running at 172.20.0.27. How does it authenticate users?\n\nThe ssh-auth-methods script probes the SSH service and reports which authentication methods are supported. Combine the first two methods with an underscore to form the password.`,
+        fr: `Un serveur SSH tourne à 172.20.0.27. Comment authentifie-t-il les utilisateurs ?\n\nLe script ssh-auth-methods sonde le service SSH et rapporte quelles méthodes d'authentification sont supportées. Combinez les deux premières méthodes avec un underscore pour former le mot de passe.`
+      },
+      hint: {
+        en: `Run the ssh-auth-methods script against the SSH server:\n\n  nmap -p 22 --script ssh-auth-methods 172.20.0.27\n\nLook at the "Supported authentication methods" list. The password combines the first two entries with an underscore.`,
+        fr: `Exécutez le script ssh-auth-methods contre le serveur SSH :\n\n  nmap -p 22 --script ssh-auth-methods 172.20.0.27\n\nRegardez la liste "Supported authentication methods". Le mot de passe combine les deux premières entrées avec un underscore.`
+      },
+      info: {
+        en: `The ssh-auth-methods NSE script connects to an SSH server, performs the protocol handshake, and reads the server's advertised authentication methods. This reveals whether the server accepts password-based login, public key authentication, keyboard-interactive, or other methods. It's a fast, non-intrusive way to understand an SSH server's security posture without attempting actual authentication.`,
+        fr: `Le script NSE ssh-auth-methods se connecte à un serveur SSH, effectue le handshake du protocole et lit les méthodes d'authentification annoncées par le serveur. Cela révèle si le serveur accepte la connexion par mot de passe, l'authentification par clé publique, le mode keyboard-interactive ou d'autres méthodes.`
+      }
+    },
+    {
+      n: 24,
+      concept: { en: '--script http-title + wildcard', fr: '--script http-title + wildcard' },
+      target: '172.20.0.28',
+      command: 'nmap -Pn --script http-title,http-robots.txt -p 80 172.20.0.28',
+      goal: {
+        en: `A web server at 172.20.0.28 hides clues in two places: the HTML page title and the robots.txt file.\n\nUse the http-title script to extract the title, and the http-robots.txt script to find hidden directories. Combine the clues from both outputs to form the password.`,
+        fr: `Un serveur web à 172.20.0.28 cache des indices à deux endroits : le titre de la page HTML et le fichier robots.txt.\n\nUtilisez le script http-title pour extraire le titre, et le script http-robots.txt pour trouver les répertoires cachés. Combinez les indices des deux sorties pour former le mot de passe.`
+      },
+      hint: {
+        en: `Run specific HTTP scripts to extract different types of information:\n\n  nmap -Pn --script http-title,http-robots.txt -p 80 172.20.0.28\n\nThe title gives you the first half. The robots.txt disallowed entry gives you the second half. Combine them.`,
+        fr: `Exécutez des scripts HTTP spécifiques pour extraire différents types d'informations :\n\n  nmap -Pn --script http-title,http-robots.txt -p 80 172.20.0.28\n\nLe titre vous donne la première moitié. L'entrée interdite de robots.txt vous donne la seconde moitié. Combinez-les.`
+      },
+      info: {
+        en: `The --script "http-*" wildcard pattern runs ALL scripts whose names start with "http-". This includes http-title, http-robots.txt, http-enum, http-headers, and many more. Wildcards are powerful for comprehensive web reconnaissance but can produce noisy output. For targeted scans, specify scripts by name or use comma-separated lists.`,
+        fr: `Le modèle wildcard --script "http-*" exécute TOUS les scripts dont le nom commence par "http-". Cela inclut http-title, http-robots.txt, http-enum, http-headers et bien d'autres. Les wildcards sont puissants pour la reconnaissance web complète mais peuvent produire une sortie bruyante. Pour des scans ciblés, spécifiez les scripts par nom ou utilisez des listes séparées par des virgules.`
+      }
+    },
+    {
+      n: 25,
+      concept: { en: '--script-args + --script-help', fr: '--script-args + --script-help' },
+      target: '172.20.0.29',
+      command: 'nmap -Pn --script http-auth --script-args user=audit,pass=audit -p 80 172.20.0.29',
+      goal: {
+        en: `This server is protected by HTTP Basic Authentication. The http-auth script can test it — but it needs credentials.\n\nFirst, read the script's documentation with --script-help to learn what arguments it accepts. Then pass the correct credentials with --script-args. The password is the authentication realm name.`,
+        fr: `Ce serveur est protégé par une authentification HTTP Basic. Le script http-auth peut le tester — mais il a besoin d'identifiants.\n\nLisez d'abord la documentation du script avec --script-help pour apprendre quels arguments il accepte. Passez ensuite les bonnes informations d'identification avec --script-args. Le mot de passe est le nom du domaine d'authentification.`
+      },
+      hint: {
+        en: `Step 1: Read the script help to learn the required arguments:\n  nmap --script-help http-auth\n\nStep 2: Run the script with the correct arguments:\n  nmap -Pn --script http-auth --script-args user=audit,pass=audit -p 80 172.20.0.29\n\nThe password is the Basic realm name in the output.`,
+        fr: `Étape 1 : Lisez l'aide du script pour apprendre les arguments requis :\n  nmap --script-help http-auth\n\nÉtape 2 : Exécutez le script avec les bons arguments :\n  nmap -Pn --script http-auth --script-args user=audit,pass=audit -p 80 172.20.0.29\n\nLe mot de passe est le nom du realm Basic dans la sortie.`
+      },
+      info: {
+        en: `--script-help displays documentation for a specific NSE script, showing its purpose, usage examples, and required arguments. --script-args passes parameters to scripts at runtime. Many scripts require credentials, file paths, or configuration values. Always read the help before running a script that requires arguments — using wrong or default values can produce misleading results or leave traces in target logs.`,
+        fr: `--script-help affiche la documentation pour un script NSE spécifique, montrant son objectif, des exemples d'utilisation et les arguments requis. --script-args passe des paramètres aux scripts au moment de l'exécution. De nombreux scripts nécessitent des identifiants, des chemins de fichiers ou des valeurs de configuration. Lisez toujours l'aide avant d'exécuter un script qui nécessite des arguments.`
+      }
+    },
+    {
+      n: 26,
+      concept: { en: '-oN / -oG + --min-rate', fr: '-oN / -oG + --min-rate' },
+      target: '172.20.0.30',
+      command: 'nmap -Pn --min-rate 1000 -p 1-100 -oN scan.txt --script http-title 172.20.0.30',
+      goal: {
+        en: `Speed matters. Scan the target fast and save results in multiple formats.\n\nUse --min-rate to force a minimum packet rate, then save output with -oN (normal format). The password is hidden in the scan output — specifically in the http-title script result.`,
+        fr: `La vitesse compte. Scannez la cible rapidement et enregistrez les résultats dans plusieurs formats.\n\nUtilisez --min-rate pour forcer un débit minimum de paquets, puis sauvegardez la sortie avec -oN (format normal). Le mot de passe est caché dans la sortie du scan — spécifiquement dans le résultat du script http-title.`
+      },
+      hint: {
+        en: `Speed up the scan and save to a file:\n\n  nmap -Pn --min-rate 1000 -p 1-100 -oN scan.txt --script http-title 172.20.0.30\n\nRead scan.txt with cat or grep. The password is in the http-title output.`,
+        fr: `Accélérez le scan et sauvegardez dans un fichier :\n\n  nmap -Pn --min-rate 1000 -p 1-100 -oN scan.txt --script http-title 172.20.0.30\n\nLisez scan.txt avec cat ou grep. Le mot de passe est dans la sortie de http-title.`
+      },
+      info: {
+        en: `--min-rate forces nmap to send at least N packets per second, speeding up scans on reliable networks. -oN saves output in the normal human-readable format. -oG saves in grepable format (one line per host). -oX saves as XML. Using output files is essential for documenting scans, comparing results over time, and sharing findings. The --script http-title flag runs alongside the scan to extract the web page title from any HTTP service found.`,
+        fr: `--min-rate force nmap à envoyer au moins N paquets par seconde, accélérant les scans sur des réseaux fiables. -oN sauvegarde la sortie au format normal lisible par l'homme. -oG sauvegarde au format grepable (une ligne par hôte). -oX sauvegarde en XML. L'utilisation de fichiers de sortie est essentielle pour documenter les scans, comparer les résultats dans le temps et partager les découvertes.`
+      }
+    },
+    {
+      n: 27,
+      concept: { en: '[E4] Full Audit Workflow', fr: '[E4] Workflow d\'audit complet' },
+      target: 'Multiple',
+      command: 'nmap -sn 172.20.0.0/24',
+      goal: {
+        en: `FINAL CHALLENGE\n\nYou have mastered individual flags. Now chain them together like a real security auditor.\n\n1. Discover active hosts in the subnet\n2. Run a fast scan and save results\n3. Deep scan with version, scripts, and OS detection\n4. Run a vulnerability audit\n5. Combine the clues from all outputs to find the password`,
+        fr: `DÉFI FINAL\n\nVous avez maîtrisé les drapeaux individuels. Maintenant, enchaînez-les comme un vérificateur de sécurité.\n\n1. Découvrez les hôtes actifs sur le sous-réseau\n2. Exécutez un scan rapide et sauvegardez les résultats\n3. Scan approfondi avec version, scripts et détection d'OS\n4. Exécutez un audit de vulnérabilités\n5. Combinez les indices de toutes les sorties pour trouver le mot de passe.`
+      },
+      hint: {
+        en: `Chain the full workflow:\n\n  nmap -sn 172.20.0.0/24\n  nmap -F -oA quick 172.20.0.25\n  nmap -sV -sC -O 172.20.0.25\n  nmap --script vuln -p 80 172.20.0.25\n\nCombine fragments from each scan output.`,
+        fr: `Enchaînez le workflow complet :\n\n  nmap -sn 172.20.0.0/24\n  nmap -F -oA quick 172.20.0.25\n  nmap -sV -sC -O 172.20.0.25\n  nmap --script vuln -p 80 172.20.0.25\n\nCombinez les fragments de chaque sortie de scan.`
+      },
+      info: {
+        en: `A complete audit workflow combines multiple techniques in sequence: host discovery, fast enumeration, deep inspection, and vulnerability assessment. Each step builds on the previous one, creating a comprehensive picture of the target network. This is how professional penetration testers and security auditors approach reconnaissance in the real world — methodical, layered, and thorough.`,
+        fr: `Un workflow d'audit complet combine plusieurs techniques en séquence : découverte d'hôtes, énumération rapide, inspection approfondie et évaluation des vulnérabilités. Chaque étape s'appuie sur la précédente, créant une image complète du réseau cible. C'est ainsi que les testeurs d'intrusion professionnels abordent la reconnaissance dans le monde réel — méthodique, stratifiée et approfondie.`
+      }
+    },
+    {
+      n: 28,
       concept: { en: 'Complete', fr: 'Terminé' },
       win: true,
       goal: {
-        en: `You made it.\n\nYou started with a simple file read at level 0 and worked your way through port ranges, protocol techniques, timing controls, output formats, scripting, and multi-host reconnaissance — every essential building block of real network scanning.\n\nCongratulations. You have completed NmapWire.\n\n— bitflip`,
-        fr: `Vous avez réussi.\n\nVous avez commencé par une simple lecture de fichier au niveau 0 et vous avez progressé à travers les plages de ports, les techniques de protocole, les contrôles de timing, les formats de sortie, les scripts et la reconnaissance multi-hôtes — tous les blocs essentiels du scan réseau réel.\n\nFélicitations. Vous avez terminé NmapWire.\n\n— bitflip`
+        en: `You made it.\n\nYou started with a simple file read at level 0 and worked your way through port ranges, protocol techniques, timing controls, output formats, scripting, multi-host reconnaissance, vulnerability auditing, TLS inspection, SSH enumeration, HTTP wildcard scanning, script configuration, and full audit workflows — every essential building block of real network scanning.\n\nCongratulations. You have completed NmapWire.\n\n— bitflip`,
+        fr: `Vous avez réussi.\n\nVous avez commencé par une simple lecture de fichier au niveau 0 et vous avez progressé à travers les plages de ports, les techniques de protocole, les contrôles de timing, les formats de sortie, les scripts, la reconnaissance multi-hôtes, l'audit des vulnérabilités, l'inspection TLS, l'énumération SSH, le scan wildcard HTTP, la configuration de scripts et les workflows d'audit complets — tous les blocs essentiels du scan réseau réel.\n\nFélicitations. Vous avez terminé NmapWire.\n\n— bitflip`
       }
     }
   ];
@@ -1393,8 +1519,57 @@ const tcpdumpLevels = [
     info: { en: '-w saves raw packets to .pcap format. -r reads a saved file (no root needed).', fr: '-w enregistre les paquets au format .pcap. -r lit un fichier sauvegardé.' }
   },
   {
-    n: 21, concept: { en: 'Complete', fr: 'Terminé' }, win: true,
-    goal: { en: 'You made it.\n\nYou started with a simple file read and worked your way through interface selection, DNS control, packet counting, snaplen, content viewing, verbosity, BPF filters, protocol filters, logical combinators, TCP flag filters, ICMP byte-offset filters, complex combined expressions, save/read workflows — every essential tcpdump skill.\n\nCongratulations. You have completed TcpdumpWire.\n\n— bitflip', fr: 'Vous avez réussi.\n\nFélicitations. Vous avez terminé TcpdumpWire.\n\n— bitflip' }
+    n: 21, concept: { en: '-C / -W / -G · Rotation', fr: '-C / -W / -G · Rotation' }, target: '172.21.0.10',
+    command: 'sudo tcpdump -i any -G 10 -w /tmp/rot.pcap host 172.21.0.10',
+    goal: { en: 'On a production server, capture files can grow to gigabytes. Automatic rotation solves this by creating a new file at regular intervals or sizes.\n\nStart a rotating capture that creates a new file every 10 seconds. Wait for rotation, then read the saved file to find the password.', fr: 'Sur un serveur de production, les fichiers de capture peuvent atteindre des gigaoctets. La rotation automatique résout cela en créant un nouveau fichier à intervalles réguliers.\n\nLancez une capture rotative qui crée un nouveau fichier toutes les 10 secondes. Attendez la rotation, puis lisez le fichier sauvegardé pour trouver le mot de passe.' },
+    hint: { en: 'sudo tcpdump -i any -G 10 -w /tmp/rot.pcap host 172.21.0.10 &\nsleep 12\nsudo tcpdump -r /tmp/rot* -A | grep PASS', fr: 'sudo tcpdump -i any -G 10 -w /tmp/rot.pcap host 172.21.0.10 &\nsleep 12\nsudo tcpdump -r /tmp/rot* -A | grep PASS' },
+    info: { en: '-G N creates a new file every N seconds. -C N creates a new file every N megabytes. -W N keeps only N most recent files. Essential for continuous monitoring and incident response.', fr: '-G N crée un nouveau fichier toutes les N secondes. -C N crée un nouveau fichier tous les N mégaoctets. -W N conserve seulement les N fichiers les plus récents. Essentiel pour la surveillance continue et la réponse aux incidents.' }
+  },
+  {
+    n: 22, concept: { en: 'Winner · Master Capture', fr: 'Vainqueur · Capture maître' }, target: 'any',
+    command: "sudo tcpdump -i any -c 1 -X -A -n -v -e",
+    goal: { en: 'You have mastered tcpdump. For the final challenge, capture any single packet with ALL the detail flags at once.\n\nCombine -X (hex+ASCII), -A (ASCII), -n (no DNS), -v (verbose), and -e (link-level headers) in one command. The password will appear in the output.', fr: 'Vous avez maîtrisé tcpdump. Pour le défi final, capturez un seul paquet avec TOUS les drapeaux de détail à la fois.\n\nCombinez -X (hex+ASCII), -A (ASCII), -n (pas de DNS), -v (verbeux) et -e (en-têtes de lien) dans une seule commande. Le mot de passe apparaîtra dans la sortie.' },
+    hint: { en: 'sudo tcpdump -i any -c 1 -X -A -n -v -e\n\nAll detail flags at once. The password proves you have mastered tcpdump.', fr: 'sudo tcpdump -i any -c 1 -X -A -n -v -e\n\nTous les drapeaux de détail à la fois. Le mot de passe prouve que vous avez maîtrisé tcpdump.' },
+    info: { en: 'This level combines every display option tcpdump offers. -X shows hex and ASCII. -A shows ASCII only. -n skips DNS. -v adds verbosity. -e includes Ethernet headers. Using them together gives the most complete view of a captured packet.', fr: 'Ce niveau combine toutes les options d\'affichage de tcpdump. -X montre l\'hex et l\'ASCII. -A montre uniquement l\'ASCII. -n ignore le DNS. -v ajoute de la verbosité. -e inclut les en-têtes Ethernet. Les utiliser ensemble donne la vue la plus complète d\'un paquet capturé.' }
+  },
+  {
+    n: 23, concept: { en: 'src / dst / net filters', fr: 'Filtres src / dst / net' }, target: '172.21.0.14',
+    command: "sudo tcpdump -i any -c 1 -A 'src host 172.21.0.14 and port 7002'",
+    goal: { en: 'Traffic flows in many directions. Some comes from a specific host, some covers an entire subnet.\n\nUse src host to isolate traffic from a specific source. Use net to capture broadcast traffic across the subnet. Combine the clues from both filters to form the password.', fr: 'Le trafic circule dans de nombreuses directions. Certains viennent d\'un hôte spécifique, d\'autres couvrent un sous-réseau entier.\n\nUtilisez src host pour isoler le trafic d\'une source spécifique. Utilisez net pour capturer le trafic de diffusion sur le sous-réseau. Combinez les indices des deux filtres pour former le mot de passe.' },
+    hint: { en: "sudo tcpdump -i any -c 1 -A 'src host 172.21.0.14 and port 7002'\n\nThe src host filter isolates traffic from the specific source. Look for the PASS: string.", fr: "sudo tcpdump -i any -c 1 -A 'src host 172.21.0.14 and port 7002'\n\nLe filtre src host isole le trafic de la source spécifique. Cherchez la chaîne PASS:." },
+    info: { en: 'src host X filters traffic FROM X. dst host X filters traffic TO X. net X/Y filters traffic within subnet X/Y. These directional filters are essential for isolating specific conversations in busy network captures.', fr: 'src host X filtre le trafic DE X. dst host X filtre le trafic VERS X. net X/Y filtre le trafic dans le sous-réseau X/Y. Ces filtres directionnels sont essentiels pour isoler des conversations spécifiques dans des captures réseau occupées.' }
+  },
+  {
+    n: 24, concept: { en: '-vvv / -X', fr: '-vvv / -X' }, target: '172.21.0.15',
+    command: "sudo tcpdump -i any -c 1 -vvv -X 'udp and host 172.21.0.15'",
+    goal: { en: 'Some packets hide details at every layer. Maximum verbosity peels back the network, transport, and link layers.\n\nUse -vvv for maximum detail and -X to see packet contents in hex + ASCII. The password is embedded in the payload.', fr: 'Certains paquets cachent des détails à chaque couche. La verbosité maximale expose les couches réseau, transport et lien.\n\nUtilisez -vvv pour le maximum de détails et -X pour voir le contenu des paquets en hex + ASCII. Le mot de passe est intégré dans la charge utile.' },
+    hint: { en: "sudo tcpdump -i any -c 1 -vvv -X 'udp and host 172.21.0.15'\n\n-vvv shows TTL, checksums, and all options. -X shows hex + ASCII payload. Look for PASS: in the ASCII column.", fr: "sudo tcpdump -i any -c 1 -vvv -X 'udp and host 172.21.0.15'\n\n-vvv montre le TTL, les checksums et toutes les options. -X montre la charge utile en hex + ASCII. Cherchez PASS: dans la colonne ASCII." },
+    info: { en: '-vvv provides maximum verbosity, showing TTL, IP options, TCP options, checksums, and window sizes. -X displays each packet in hex and ASCII side-by-side, making it easy to spot readable strings in binary data. Together they give the most complete packet analysis view.', fr: '-vvv fournit la verbosité maximale, montrant le TTL, les options IP, les options TCP, les checksums et les tailles de fenêtre. -X affiche chaque paquet en hex et ASCII côte à côte, facilitant la détection de chaînes lisibles dans des données binaires.' }
+  },
+  {
+    n: 25, concept: { en: 'tcp[tcpflags] & tcp-fin', fr: 'tcp[tcpflags] & tcp-fin' }, target: '172.21.0.16',
+    command: "sudo tcpdump -i any -c 1 -A 'tcp[tcpflags] & tcp-fin != 0'",
+    goal: { en: 'Not every connection ends gracefully. Some are cut off mid-stream. Capture the closing signal.\n\nFilter for FIN packets using tcp[tcpflags] & tcp-fin != 0. The password is in the payload of a FIN packet.', fr: 'Toutes les connexions ne se terminent pas gracieusement. Certaines sont coupées en cours de route. Capturez le signal de fermeture.\n\nFiltrez les paquets FIN avec tcp[tcpflags] & tcp-fin != 0. Le mot de passe est dans la charge utile d\'un paquet FIN.' },
+    hint: { en: "sudo tcpdump -i any -c 1 -A 'tcp[tcpflags] & tcp-fin != 0'\n\nFIN flag = normal connection close. The password is in the payload.", fr: "sudo tcpdump -i any -c 1 -A 'tcp[tcpflags] & tcp-fin != 0'\n\nLe drapeau FIN = fermeture normale de connexion. Le mot de passe est dans la charge utile." },
+    info: { en: 'TCP uses the FIN flag to gracefully close a connection. The RST flag aborts a connection abruptly. Both can be detected with tcp[tcpflags] filters. Understanding connection teardown patterns helps diagnose network issues and detect anomalous behavior.', fr: 'TCP utilise le drapeau FIN pour fermer gracieusement une connexion. Le drapeau RST interrompt abruptement une connexion. Les deux peuvent être détectés avec les filtres tcp[tcpflags]. Comprendre les patterns de fermeture aide à diagnostiquer les problèmes réseau.' }
+  },
+  {
+    n: 26, concept: { en: 'icmp[icmptype] == 3', fr: 'icmp[icmptype] == 3' }, target: '172.21.0.17',
+    command: "sudo tcpdump -i any -c 1 -A 'icmp[icmptype] == 3 and host 172.21.0.17'",
+    goal: { en: 'Sometimes a destination cannot be reached. The network sends error messages back. Capture them.\n\nFilter ICMP type 3 (Destination Unreachable) with icmp[icmptype] == 3. The password is in the ICMP payload.', fr: 'Parfois une destination ne peut pas être atteinte. Le réseau renvoie des messages d\'erreur. Capturez-les.\n\nFiltrez ICMP type 3 (Destination Unreachable) avec icmp[icmptype] == 3. Le mot de passe est dans la charge utile ICMP.' },
+    hint: { en: "sudo tcpdump -i any -c 1 -A 'icmp[icmptype] == 3 and host 172.21.0.17'\n\nICMP type 3 = Destination Unreachable. Code 1 = Host Unreachable. The password is in the payload.", fr: "sudo tcpdump -i any -c 1 -A 'icmp[icmptype] == 3 and host 172.21.0.17'\n\nICMP type 3 = Destination Unreachable. Code 1 = Host Unreachable. Le mot de passe est dans la charge utile." },
+    info: { en: 'ICMP Type 3 (Destination Unreachable) is sent by routers or hosts when a packet cannot be delivered. Code 0 = Network Unreachable, Code 1 = Host Unreachable, Code 3 = Port Unreachable. These messages are critical for troubleshooting connectivity issues and detecting routing problems.', fr: 'ICMP Type 3 (Destination Unreachable) est envoyé par les routeurs ou hôtes quand un paquet ne peut pas être livré. Code 0 = Network Unreachable, Code 1 = Host Unreachable, Code 3 = Port Unreachable. Ces messages sont critiques pour le dépannage de connectivité.' }
+  },
+  {
+    n: 27, concept: { en: 'Statistics pipeline', fr: 'Pipeline de statistiques' }, target: '172.21.0.18',
+    command: "sudo tcpdump -i any -c 1 -A 'dst port 22 and tcp[13] == 2'",
+    goal: { en: 'Multiple IPs are hammering a single port. Count the attempts, find the pattern, then capture the payload of one attack packet.\n\nUse a statistics pipeline to count SYNs per IP, then capture one packet with -A to get the password.', fr: 'Plusieurs IPs martèlent un seul port. Comptez les tentatives, trouvez le pattern, puis capturez la charge utile d\'un paquet d\'attaque.\n\nUtilisez un pipeline de statistiques pour compter les SYNs par IP, puis capturez un paquet avec -A pour obtenir le mot de passe.' },
+    hint: { en: "sudo tcpdump -i any -c 1 -A 'dst port 22 and tcp[13] == 2'\n\nThe brute-force pattern shows multiple spoofed IPs sending SYNs. The payload of one SYN contains the password.", fr: "sudo tcpdump -i any -c 1 -A 'dst port 22 and tcp[13] == 2'\n\nLe pattern de brute-force montre plusieurs IPs usurpées envoyant des SYNs. La charge utile d\'un SYN contient le mot de passe." },
+    info: { en: 'Combining tcpdump with shell pipelines (awk, cut, sort, uniq) creates powerful traffic analysis tools. Counting connections per source IP reveals brute-force patterns, scan behavior, and bot activity. This is a standard technique in network forensics and intrusion detection.', fr: 'Combiner tcpdump avec des pipelines shell (awk, cut, sort, uniq) crée des outils d\'analyse de trafic puissants. Compter les connexions par IP source révèle les patterns de brute-force, les comportements de scan et l\'activité de bots.' }
+  },
+  {
+    n: 28, concept: { en: 'Complete', fr: 'Terminé' }, win: true,
+    goal: { en: 'You made it.\n\nYou started with a simple file read and worked your way through interface selection, DNS control, packet counting, snaplen, content viewing, verbosity, BPF filters, protocol filters, logical combinators, TCP flag filters, ICMP byte-offset filters, complex combined expressions, save/read workflows, rotation, directional filtering, maximum verbosity, FIN detection, ICMP error analysis, and statistics pipelines — every essential tcpdump skill.\n\nCongratulations. You have completed TcpdumpWire.\n\n— bitflip', fr: 'Vous avez réussi.\n\nVous avez commencé par une simple lecture de fichier et vous avez progressé à travers la sélection d\'interface, le contrôle DNS, le comptage de paquets, le snaplen, l\'affichage de contenu, la verbosité, les filtres BPF, les filtres de protocole, les combinateurs logiques, les filtres de drapeaux TCP, les filtres d\'offset ICMP, les expressions combinées complexes, les workflows de sauvegarde/lecture, la rotation, le filtrage directionnel, la verbosité maximale, la détection FIN, l\'analyse d\'erreurs ICMP et les pipelines de statistiques — toutes les compétences tcpdump essentielles.\n\nFélicitations. Vous avez terminé TcpdumpWire.\n\n— bitflip' }
   }
 ];
 
